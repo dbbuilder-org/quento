@@ -1,0 +1,76 @@
+# Quento Mobile Build Pipeline
+# AI App Development powered by ServiceVision (https://www.servicevision.net)
+
+name: Mobile Build
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/mobile/**'
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: 'Platform to build'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - ios
+          - android
+      profile:
+        description: 'Build profile'
+        required: true
+        default: 'preview'
+        type: choice
+        options:
+          - development
+          - preview
+          - production
+
+jobs:
+  build:
+    name: Build Mobile App
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Setup Expo
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install mobile dependencies
+        working-directory: apps/mobile
+        run: npm ci
+
+      - name: Build iOS
+        if: inputs.platform == 'all' || inputs.platform == 'ios'
+        working-directory: apps/mobile
+        run: eas build --platform ios --profile ${{ inputs.profile || 'preview' }} --non-interactive
+
+      - name: Build Android
+        if: inputs.platform == 'all' || inputs.platform == 'android'
+        working-directory: apps/mobile
+        run: eas build --platform android --profile ${{ inputs.profile || 'preview' }} --non-interactive
+
+      - name: Build Summary
+        run: |
+          echo "## Mobile Build Complete 🎉" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Platform:** ${{ inputs.platform || 'all' }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Profile:** ${{ inputs.profile || 'preview' }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "AI App Development powered by [ServiceVision](https://www.servicevision.net)" >> $GITHUB_STEP_SUMMARY

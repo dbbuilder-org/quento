@@ -17,11 +17,10 @@
     "build": "nx build",
     "test": "nx test",
     "lint": "nx lint",
-    "mobile:start": "nx start mobile",
-    "mobile:ios": "nx run-ios mobile",
-    "mobile:android": "nx run-android mobile",
-    "api:start": "nx serve api",
-    "api:dev": "cd apps/api && uvicorn app.main:app --reload",
+    "mobile:start": "cd apps/mobile && npx expo start",
+    "mobile:ios": "cd apps/mobile && npx expo run:ios",
+    "mobile:android": "cd apps/mobile && npx expo run:android",
+    "api:dev": "cd apps/api && uvicorn app.main:app --reload --port 8000",
     "format": "nx format:write",
     "format:check": "nx format:check",
     "affected:build": "nx affected --target=build",
@@ -30,16 +29,11 @@
     "graph": "nx graph",
     "prepare": "husky install"
   },
-  "dependencies": {
-    "react": "18.2.0",
-    "react-native": "0.73.2"
-  },
   "devDependencies": {
     "@nx/eslint": "17.2.0",
     "@nx/eslint-plugin": "17.2.0",
     "@nx/jest": "17.2.0",
     "@nx/js": "17.2.0",
-    "@nx/react-native": "17.2.0",
     "@nx/workspace": "17.2.0",
     "@types/jest": "29.5.11",
     "@types/node": "20.10.0",

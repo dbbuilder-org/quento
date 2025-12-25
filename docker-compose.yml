@@ -1,0 +1,85 @@
+# Quento Development Environment
+# AI App Development powered by ServiceVision (https://www.servicevision.net)
+
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  db:
+    image: postgres:15-alpine
+    container_name: quento-db
+    environment:
+      POSTGRES_USER: quento
+      POSTGRES_PASSWORD: quento_dev_password
+      POSTGRES_DB: quento
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U quento"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    container_name: quento-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # FastAPI Backend
+  api:
+    build:
+      context: ./apps/api
+      dockerfile: Dockerfile
+    container_name: quento-api
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://quento:quento_dev_password@db:5432/quento
+      - REDIS_URL=redis://redis:6379
+      - DEBUG=true
+      - ENVIRONMENT=development
+      - JWT_SECRET_KEY=dev-secret-key-change-in-production
+      - LITELLM_API_KEY=${LITELLM_API_KEY:-}
+    volumes:
+      - ./apps/api:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  # Playwright for web scraping
+  playwright:
+    image: mcr.microsoft.com/playwright:v1.40.0-focal
+    container_name: quento-playwright
+    environment:
+      - PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
+    volumes:
+      - playwright_browsers:/ms-playwright
+    command: sleep infinity
+    profiles:
+      - scraping
+
+volumes:
+  postgres_data:
+    name: quento_postgres_data
+  redis_data:
+    name: quento_redis_data
+  playwright_browsers:
+    name: quento_playwright_browsers
+
+networks:
+  default:
+    name: quento_network

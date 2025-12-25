@@ -1,0 +1,283 @@
+{
+  "$schema": "https://tr.designtokens.org/format/",
+  "color": {
+    "primary": {
+      "carbon": {
+        "value": "#1A1A1A",
+        "type": "color",
+        "description": "Primary text color"
+      },
+      "forest": {
+        "value": "#2D5A3D",
+        "type": "color",
+        "description": "Primary brand color, CTAs"
+      },
+      "sage": {
+        "value": "#4A7C5C",
+        "type": "color",
+        "description": "Secondary accent, links"
+      },
+      "pure": {
+        "value": "#FFFFFF",
+        "type": "color",
+        "description": "Background, text on dark"
+      }
+    },
+    "secondary": {
+      "bark": {
+        "value": "#8B7355",
+        "type": "color",
+        "description": "Warm accent, inactive"
+      },
+      "sand": {
+        "value": "#D4C4A8",
+        "type": "color",
+        "description": "Subtle backgrounds"
+      },
+      "cream": {
+        "value": "#F5F3EF",
+        "type": "color",
+        "description": "Card surfaces"
+      },
+      "parchment": {
+        "value": "#E8E4DD",
+        "type": "color",
+        "description": "Dividers, borders"
+      }
+    },
+    "semantic": {
+      "success": {
+        "value": "#2D7D46",
+        "type": "color",
+        "description": "Success states"
+      },
+      "warning": {
+        "value": "#D4A84B",
+        "type": "color",
+        "description": "Warning states"
+      },
+      "error": {
+        "value": "#C75450",
+        "type": "color",
+        "description": "Error states"
+      },
+      "info": {
+        "value": "#4A90A4",
+        "type": "color",
+        "description": "Info states"
+      }
+    }
+  },
+  "spacing": {
+    "xs": {
+      "value": "4px",
+      "type": "spacing",
+      "description": "Tight element spacing"
+    },
+    "sm": {
+      "value": "8px",
+      "type": "spacing",
+      "description": "Related element groups"
+    },
+    "md": {
+      "value": "12px",
+      "type": "spacing",
+      "description": "Standard padding"
+    },
+    "lg": {
+      "value": "16px",
+      "type": "spacing",
+      "description": "Card internal padding"
+    },
+    "xl": {
+      "value": "20px",
+      "type": "spacing",
+      "description": "Section breaks"
+    },
+    "2xl": {
+      "value": "24px",
+      "type": "spacing",
+      "description": "Component separation"
+    },
+    "3xl": {
+      "value": "32px",
+      "type": "spacing",
+      "description": "Major section gaps"
+    },
+    "4xl": {
+      "value": "40px",
+      "type": "spacing",
+      "description": "Page margins"
+    },
+    "5xl": {
+      "value": "48px",
+      "type": "spacing",
+      "description": "Large separations"
+    },
+    "6xl": {
+      "value": "64px",
+      "type": "spacing",
+      "description": "Hero spacing"
+    }
+  },
+  "typography": {
+    "fontFamily": {
+      "display": {
+        "value": "Playfair Display",
+        "type": "fontFamilies"
+      },
+      "body": {
+        "value": "Inter",
+        "type": "fontFamilies"
+      },
+      "mono": {
+        "value": "JetBrains Mono",
+        "type": "fontFamilies"
+      }
+    },
+    "displayLarge": {
+      "fontSize": { "value": "48px", "type": "fontSizes" },
+      "lineHeight": { "value": "56px", "type": "lineHeights" },
+      "fontWeight": { "value": "300", "type": "fontWeights" },
+      "letterSpacing": { "value": "-0.5%", "type": "letterSpacing" }
+    },
+    "displayMedium": {
+      "fontSize": { "value": "36px", "type": "fontSizes" },
+      "lineHeight": { "value": "44px", "type": "lineHeights" },
+      "fontWeight": { "value": "400", "type": "fontWeights" },
+      "letterSpacing": { "value": "-0.5%", "type": "letterSpacing" }
+    },
+    "headlineLarge": {
+      "fontSize": { "value": "32px", "type": "fontSizes" },
+      "lineHeight": { "value": "40px", "type": "lineHeights" },
+      "fontWeight": { "value": "600", "type": "fontWeights" },
+      "letterSpacing": { "value": "-0.5%", "type": "letterSpacing" }
+    },
+    "headlineMedium": {
+      "fontSize": { "value": "28px", "type": "fontSizes" },
+      "lineHeight": { "value": "36px", "type": "lineHeights" },
+      "fontWeight": { "value": "600", "type": "fontWeights" },
+      "letterSpacing": { "value": "-0.25%", "type": "letterSpacing" }
+    },
+    "titleLarge": {
+      "fontSize": { "value": "22px", "type": "fontSizes" },
+      "lineHeight": { "value": "28px", "type": "lineHeights" },
+      "fontWeight": { "value": "600", "type": "fontWeights" }
+    },
+    "titleMedium": {
+      "fontSize": { "value": "18px", "type": "fontSizes" },
+      "lineHeight": { "value": "24px", "type": "lineHeights" },
+      "fontWeight": { "value": "500", "type": "fontWeights" }
+    },
+    "bodyLarge": {
+      "fontSize": { "value": "17px", "type": "fontSizes" },
+      "lineHeight": { "value": "24px", "type": "lineHeights" },
+      "fontWeight": { "value": "400", "type": "fontWeights" }
+    },
+    "body": {
+      "fontSize": { "value": "15px", "type": "fontSizes" },
+      "lineHeight": { "value": "22px", "type": "lineHeights" },
+      "fontWeight": { "value": "400", "type": "fontWeights" }
+    },
+    "bodySmall": {
+      "fontSize": { "value": "13px", "type": "fontSizes" },
+      "lineHeight": { "value": "18px", "type": "lineHeights" },
+      "fontWeight": { "value": "400", "type": "fontWeights" },
+      "letterSpacing": { "value": "0.1%", "type": "letterSpacing" }
+    },
+    "labelLarge": {
+      "fontSize": { "value": "14px", "type": "fontSizes" },
+      "lineHeight": { "value": "20px", "type": "lineHeights" },
+      "fontWeight": { "value": "500", "type": "fontWeights" },
+      "letterSpacing": { "value": "0.1%", "type": "letterSpacing" }
+    },
+    "labelMedium": {
+      "fontSize": { "value": "12px", "type": "fontSizes" },
+      "lineHeight": { "value": "16px", "type": "lineHeights" },
+      "fontWeight": { "value": "500", "type": "fontWeights" },
+      "letterSpacing": { "value": "0.5%", "type": "letterSpacing" }
+    },
+    "caption": {
+      "fontSize": { "value": "11px", "type": "fontSizes" },
+      "lineHeight": { "value": "14px", "type": "lineHeights" },
+      "fontWeight": { "value": "400", "type": "fontWeights" },
+      "letterSpacing": { "value": "0.5%", "type": "letterSpacing" }
+    }
+  },
+  "borderRadius": {
+    "xs": {
+      "value": "4px",
+      "type": "borderRadius",
+      "description": "Small elements"
+    },
+    "sm": {
+      "value": "8px",
+      "type": "borderRadius",
+      "description": "Inputs, buttons"
+    },
+    "md": {
+      "value": "12px",
+      "type": "borderRadius",
+      "description": "Cards, panels"
+    },
+    "lg": {
+      "value": "16px",
+      "type": "borderRadius",
+      "description": "Large cards"
+    },
+    "xl": {
+      "value": "20px",
+      "type": "borderRadius",
+      "description": "Chat bubbles"
+    },
+    "full": {
+      "value": "9999px",
+      "type": "borderRadius",
+      "description": "Pills, circles"
+    }
+  },
+  "shadow": {
+    "sm": {
+      "value": "0 1px 4px rgba(0,0,0,0.04)",
+      "type": "boxShadow",
+      "description": "Subtle elevation"
+    },
+    "md": {
+      "value": "0 2px 8px rgba(0,0,0,0.08)",
+      "type": "boxShadow",
+      "description": "Standard elevation"
+    },
+    "lg": {
+      "value": "0 4px 16px rgba(0,0,0,0.12)",
+      "type": "boxShadow",
+      "description": "High elevation"
+    }
+  },
+  "animation": {
+    "fast": {
+      "value": "150ms",
+      "type": "duration",
+      "description": "Micro-interactions"
+    },
+    "normal": {
+      "value": "200ms",
+      "type": "duration",
+      "description": "Standard transitions"
+    },
+    "slow": {
+      "value": "300ms",
+      "type": "duration",
+      "description": "Page transitions"
+    },
+    "ring": {
+      "value": "800ms",
+      "type": "duration",
+      "description": "Ring progress"
+    }
+  },
+  "meta": {
+    "version": "1.0.0",
+    "project": "Quento",
+    "credits": "AI App Development powered by ServiceVision (https://www.servicevision.net)"
+  }
+}
