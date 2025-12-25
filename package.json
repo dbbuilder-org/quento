@@ -1,0 +1,77 @@
+{
+  "name": "@quento/source",
+  "version": "0.0.0",
+  "license": "UNLICENSED",
+  "private": true,
+  "description": "Quento - AI-Powered Business Growth Platform",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dbbuilder-org/quento.git"
+  },
+  "author": {
+    "name": "Chris Therriault",
+    "email": "chris@servicevision.net"
+  },
+  "scripts": {
+    "start": "nx serve",
+    "build": "nx build",
+    "test": "nx test",
+    "lint": "nx lint",
+    "mobile:start": "nx start mobile",
+    "mobile:ios": "nx run-ios mobile",
+    "mobile:android": "nx run-android mobile",
+    "api:start": "nx serve api",
+    "api:dev": "cd apps/api && uvicorn app.main:app --reload",
+    "format": "nx format:write",
+    "format:check": "nx format:check",
+    "affected:build": "nx affected --target=build",
+    "affected:test": "nx affected --target=test",
+    "affected:lint": "nx affected --target=lint",
+    "graph": "nx graph",
+    "prepare": "husky install"
+  },
+  "dependencies": {
+    "react": "18.2.0",
+    "react-native": "0.73.2"
+  },
+  "devDependencies": {
+    "@nx/eslint": "17.2.0",
+    "@nx/eslint-plugin": "17.2.0",
+    "@nx/jest": "17.2.0",
+    "@nx/js": "17.2.0",
+    "@nx/react-native": "17.2.0",
+    "@nx/workspace": "17.2.0",
+    "@types/jest": "29.5.11",
+    "@types/node": "20.10.0",
+    "@typescript-eslint/eslint-plugin": "6.13.0",
+    "@typescript-eslint/parser": "6.13.0",
+    "eslint": "8.54.0",
+    "eslint-config-prettier": "9.1.0",
+    "eslint-plugin-react": "7.33.2",
+    "eslint-plugin-react-hooks": "4.6.0",
+    "husky": "8.0.3",
+    "jest": "29.7.0",
+    "lint-staged": "15.2.0",
+    "nx": "17.2.0",
+    "prettier": "3.1.0",
+    "ts-jest": "29.1.1",
+    "typescript": "5.3.2"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ],
+    "*.py": [
+      "black",
+      "isort"
+    ]
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
