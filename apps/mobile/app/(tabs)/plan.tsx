@@ -4,15 +4,17 @@
  * AI App Development powered by ServiceVision (https://www.servicevision.net)
  */
 
-import { useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { StyleSheet, Text, View, ScrollView, Pressable, Animated } from 'react-native';
 import { useStrategyStore } from '../../stores/strategyStore';
 import { SkeletonCard, SkeletonListItem } from '../../components/ui/Skeleton';
 import AnimatedView from '../../components/ui/AnimatedView';
-import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from '../../constants/theme';
+import ExportMenu from '../../components/ui/ExportMenu';
+import { COLORS, SPACING, RADIUS, TYPOGRAPHY, SHADOWS } from '../../constants/theme';
 
 export default function PlanScreen() {
   const { strategy, isGenerating } = useStrategyStore();
+  const [showExportMenu, setShowExportMenu] = useState(false);
   const brainAnim = useRef(new Animated.Value(0)).current;
 
   // Animate the brain emoji when generating
@@ -97,7 +99,24 @@ export default function PlanScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <AnimatedView animation="scale" delay={0}>
+      {/* Export Button Header */}
+      <AnimatedView animation="fadeInDown" delay={0}>
+        <View style={styles.exportHeader}>
+          <Text style={styles.strategyTitle}>{strategy.title || 'Your Strategy'}</Text>
+          <Pressable
+            style={({ pressed }) => [
+              styles.exportButton,
+              pressed && styles.exportButtonPressed,
+            ]}
+            onPress={() => setShowExportMenu(true)}
+          >
+            <Text style={styles.exportIcon}>📤</Text>
+            <Text style={styles.exportText}>Export</Text>
+          </Pressable>
+        </View>
+      </AnimatedView>
+
+      <AnimatedView animation="scale" delay={100}>
         <View style={styles.visionCard}>
           <Text style={styles.visionLabel}>YOUR VISION</Text>
           <Text style={styles.visionText}>{strategy.visionStatement}</Text>
@@ -186,6 +205,13 @@ export default function PlanScreen() {
           <Text style={styles.actionButtonText}>Create Action Plan →</Text>
         </Pressable>
       </AnimatedView>
+
+      {/* Export Menu Modal */}
+      <ExportMenu
+        visible={showExportMenu}
+        onClose={() => setShowExportMenu(false)}
+        strategy={strategy}
+      />
     </ScrollView>
   );
 }
@@ -193,11 +219,44 @@ export default function PlanScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.pure,
   },
   content: {
-    padding: 24,
-    paddingBottom: 40,
+    padding: SPACING['2xl'],
+    paddingBottom: SPACING['4xl'],
+  },
+  exportHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: SPACING.lg,
+  },
+  strategyTitle: {
+    fontSize: TYPOGRAPHY.titleLarge.fontSize,
+    fontWeight: '600',
+    color: COLORS.carbon,
+    flex: 1,
+  },
+  exportButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: COLORS.cream,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: SPACING.sm,
+    borderRadius: RADIUS.full,
+    gap: SPACING.xs,
+    ...SHADOWS.sm,
+  },
+  exportButtonPressed: {
+    backgroundColor: COLORS.parchment,
+  },
+  exportIcon: {
+    fontSize: 16,
+  },
+  exportText: {
+    fontSize: TYPOGRAPHY.labelMedium.fontSize,
+    fontWeight: '600',
+    color: COLORS.forest,
   },
   loadingContainer: {
     flex: 1,

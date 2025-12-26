@@ -16,3 +16,5 @@ export {
 
 export { default as AnimatedView } from './AnimatedView';
 export { StaggeredList, PulseView, ShakeView } from './AnimatedView';
+
+export { default as ExportMenu } from './ExportMenu';
