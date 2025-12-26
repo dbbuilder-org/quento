@@ -38,38 +38,37 @@ export default {
     },
     plugins: [
       "expo-router",
-      [
-        "sentry-expo",
-        {
-          organization: process.env.SENTRY_ORG || "your-sentry-org",
-          project: "quento-mobile",
-          url: "https://sentry.io/"
-        }
-      ]
+      // Temporarily disabled - Sentry SDK has C++ issues with Xcode 16/iOS 26
+      // [
+      //   "sentry-expo",
+      //   {
+      //     organization: process.env.SENTRY_ORG || "your-sentry-org",
+      //     project: "quento-mobile",
+      //     url: "https://sentry.io/"
+      //   }
+      // ]
     ],
     scheme: "quento",
     extra: {
       eas: {
         projectId: process.env.EAS_PROJECT_ID || "your-eas-project-id"
       },
-      // Use Render URL in production, localhost in development
-      apiUrl: IS_PROD
-        ? "https://quento-api.onrender.com"
-        : "http://localhost:8000",
+      // Always use Render URL (local API not running)
+      apiUrl: "https://quento-api.onrender.com",
       sentryDsn: process.env.SENTRY_DSN || "",
       environment: IS_PROD ? "production" : "development",
       credits: "AI App Development powered by ServiceVision (https://www.servicevision.net)"
     },
-    hooks: {
-      postPublish: [
-        {
-          file: "sentry-expo/upload-sourcemaps",
-          config: {
-            organization: process.env.SENTRY_ORG || "your-sentry-org",
-            project: "quento-mobile"
-          }
-        }
-      ]
-    }
+    // hooks: {
+    //   postPublish: [
+    //     {
+    //       file: "sentry-expo/upload-sourcemaps",
+    //       config: {
+    //         organization: process.env.SENTRY_ORG || "your-sentry-org",
+    //         project: "quento-mobile"
+    //       }
+    //     }
+    //   ]
+    // }
   }
 };

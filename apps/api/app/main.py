@@ -20,6 +20,9 @@ try:
 
     from app.api.v1.router import api_router
     print("Router imported successfully", flush=True)
+
+    from app.db.database import init_db
+    print("Database module imported", flush=True)
 except Exception as e:
     print(f"STARTUP ERROR: {e}", flush=True)
     traceback.print_exc()
@@ -62,3 +65,15 @@ async def root():
 async def health_check():
     """Health check endpoint for load balancers."""
     return {"status": "healthy"}
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database tables on startup."""
+    print("Initializing database tables...", flush=True)
+    try:
+        await init_db()
+        print("Database tables created successfully", flush=True)
+    except Exception as e:
+        print(f"Database initialization error: {e}", flush=True)
+        traceback.print_exc()
