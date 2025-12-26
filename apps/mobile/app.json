@@ -31,14 +31,36 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "sentry-expo",
+        {
+          "organization": "your-sentry-org",
+          "project": "quento-mobile",
+          "url": "https://sentry.io/"
+        }
+      ]
     ],
     "scheme": "quento",
     "extra": {
       "eas": {
         "projectId": "your-eas-project-id"
       },
+      "apiUrl": "http://localhost:8000",
+      "sentryDsn": "",
+      "environment": "development",
       "credits": "AI App Development powered by ServiceVision (https://www.servicevision.net)"
+    },
+    "hooks": {
+      "postPublish": [
+        {
+          "file": "sentry-expo/upload-sourcemaps",
+          "config": {
+            "organization": "your-sentry-org",
+            "project": "quento-mobile"
+          }
+        }
+      ]
     }
   }
 }

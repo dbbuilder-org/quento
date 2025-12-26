@@ -8,6 +8,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { authApi, setTokens, clearTokens, User as ApiUser } from '../services/api';
+import { setUser as setSentryUser, addBreadcrumb, captureException } from '../services/sentry';
 
 interface User {
   id: string;
@@ -58,14 +59,26 @@ export const useAuthStore = create<AuthState>()(
 
       login: async (email: string, password: string) => {
         set({ isLoading: true, error: null });
+        addBreadcrumb('Login attempt', 'user', { email });
+
         try {
           const response = await authApi.login(email, password);
 
           if (response.success && response.data) {
             const { user, tokens } = response.data;
+            const mappedUser = mapApiUser(user);
+
+            // Set Sentry user context
+            setSentryUser({
+              id: user.id,
+              email: user.email,
+              name: user.full_name || undefined,
+            });
+
+            addBreadcrumb('Login successful', 'user', { userId: user.id });
 
             set({
-              user: mapApiUser(user),
+              user: mappedUser,
               accessToken: tokens.access_token,
               refreshToken: tokens.refresh_token,
               isAuthenticated: true,
@@ -76,6 +89,7 @@ export const useAuthStore = create<AuthState>()(
           }
         } catch (error) {
           const message = error instanceof Error ? error.message : 'Login failed';
+          captureException(error instanceof Error ? error : new Error(message), { email });
           set({ isLoading: false, error: message });
           throw error;
         }
@@ -83,14 +97,26 @@ export const useAuthStore = create<AuthState>()(
 
       register: async (email: string, password: string, fullName: string, companyName?: string) => {
         set({ isLoading: true, error: null });
+        addBreadcrumb('Registration attempt', 'user', { email });
+
         try {
           const response = await authApi.register(email, password, fullName, companyName);
 
           if (response.success && response.data) {
             const { user, tokens } = response.data;
+            const mappedUser = mapApiUser(user);
+
+            // Set Sentry user context
+            setSentryUser({
+              id: user.id,
+              email: user.email,
+              name: user.full_name || undefined,
+            });
+
+            addBreadcrumb('Registration successful', 'user', { userId: user.id });
 
             set({
-              user: mapApiUser(user),
+              user: mappedUser,
               accessToken: tokens.access_token,
               refreshToken: tokens.refresh_token,
               isAuthenticated: true,
@@ -101,17 +127,22 @@ export const useAuthStore = create<AuthState>()(
           }
         } catch (error) {
           const message = error instanceof Error ? error.message : 'Registration failed';
+          captureException(error instanceof Error ? error : new Error(message), { email });
           set({ isLoading: false, error: message });
           throw error;
         }
       },
 
       logout: async () => {
+        addBreadcrumb('Logout', 'user');
+
         try {
           await authApi.logout();
         } catch {
           // Ignore logout errors, still clear local state
         } finally {
+          // Clear Sentry user context
+          setSentryUser(null);
           clearTokens();
           set({
             user: null,
