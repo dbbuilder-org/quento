@@ -79,7 +79,7 @@ class ActionItem(Base):
     status = Column(Enum(ActionStatus), default=ActionStatus.PENDING)
     due_date = Column(Date, nullable=True)
     completed_at = Column(DateTime, nullable=True)
-    metadata = Column(JSON, default=dict)
+    extra_data = Column(JSON, default=dict)
 
     created_at = Column(DateTime, default=datetime.utcnow)
 
