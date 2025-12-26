@@ -106,3 +106,15 @@ class UserAlreadyExistsError(QuentoException):
             status_code=409,
             details=details,
         )
+
+
+class InvalidTokenError(QuentoException):
+    """Invalid or expired token."""
+
+    def __init__(self, message: str = "Invalid or expired token", details: Optional[Any] = None):
+        super().__init__(
+            message=message,
+            code="INVALID_TOKEN",
+            status_code=401,
+            details=details,
+        )
