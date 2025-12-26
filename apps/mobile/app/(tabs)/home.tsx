@@ -4,7 +4,7 @@
  * AI App Development powered by ServiceVision (https://www.servicevision.net)
  */
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import {
   StyleSheet,
   Text,
@@ -14,15 +14,25 @@ import {
   FlatList,
   KeyboardAvoidingView,
   Platform,
+  Animated,
 } from 'react-native';
 import { useChatStore } from '../../stores/chatStore';
 import ChatBubble from '../../components/chat/ChatBubble';
 import TypingIndicator from '../../components/chat/TypingIndicator';
+import QuickReplies from '../../components/chat/QuickReplies';
+import MessageSearch from '../../components/chat/MessageSearch';
+import { COLORS, SPACING, RADIUS, TYPOGRAPHY, SHADOWS } from '../../constants/theme';
 
 export default function HomeScreen() {
   const [inputText, setInputText] = useState('');
+  const [showQuickReplies, setShowQuickReplies] = useState(true);
+  const [showSearch, setShowSearch] = useState(false);
   const flatListRef = useRef<FlatList>(null);
-  const { messages, isTyping, sendMessage, currentRing } = useChatStore();
+  const ringScaleAnim = useRef(new Animated.Value(1)).current;
+  const { messages, isTyping, sendMessage, currentRing, ringPhase } = useChatStore();
+
+  // Ring phase names for display
+  const RING_NAMES = ['Core', 'Discover', 'Plan', 'Execute', 'Optimize'];
 
   useEffect(() => {
     // Scroll to bottom when new messages arrive
@@ -33,12 +43,46 @@ export default function HomeScreen() {
     }
   }, [messages, isTyping]);
 
-  const handleSend = () => {
-    if (!inputText.trim()) return;
+  // Animate ring indicator when ring changes
+  useEffect(() => {
+    Animated.sequence([
+      Animated.timing(ringScaleAnim, {
+        toValue: 1.2,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+      Animated.spring(ringScaleAnim, {
+        toValue: 1,
+        tension: 100,
+        friction: 8,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, [currentRing, ringScaleAnim]);
 
-    sendMessage(inputText.trim());
+  const handleSend = useCallback((text?: string) => {
+    const messageText = text || inputText.trim();
+    if (!messageText) return;
+
+    sendMessage(messageText);
     setInputText('');
-  };
+    setShowQuickReplies(false);
+
+    // Show quick replies again after a delay
+    setTimeout(() => setShowQuickReplies(true), 2000);
+  }, [inputText, sendMessage]);
+
+  const handleQuickReply = useCallback((text: string) => {
+    handleSend(text);
+  }, [handleSend]);
+
+  const handleSearchSelect = useCallback((messageId: string) => {
+    // Find message index and scroll to it
+    const index = messages.findIndex(m => m.id === messageId);
+    if (index !== -1) {
+      flatListRef.current?.scrollToIndex({ index, animated: true });
+    }
+  }, [messages]);
 
   const renderMessage = ({ item }: { item: typeof messages[0] }) => (
     <ChatBubble
@@ -56,17 +100,39 @@ export default function HomeScreen() {
     >
       {/* Ring Progress Header */}
       <View style={styles.progressHeader}>
-        <Text style={styles.progressText}>Ring {currentRing} of 5</Text>
-        <View style={styles.progressDots}>
-          {[1, 2, 3, 4, 5].map((ring) => (
-            <View
-              key={ring}
-              style={[
-                styles.progressDot,
-                ring <= currentRing && styles.progressDotActive,
-              ]}
-            />
-          ))}
+        <View style={styles.progressLeft}>
+          <Animated.View
+            style={[
+              styles.ringBadge,
+              { transform: [{ scale: ringScaleAnim }] },
+            ]}
+          >
+            <Text style={styles.ringNumber}>{currentRing}</Text>
+          </Animated.View>
+          <View style={styles.ringInfo}>
+            <Text style={styles.ringName}>{RING_NAMES[currentRing - 1]}</Text>
+            <Text style={styles.progressText}>Ring {currentRing} of 5</Text>
+          </View>
+        </View>
+        <View style={styles.progressRight}>
+          <Pressable
+            style={styles.searchButton}
+            onPress={() => setShowSearch(true)}
+          >
+            <Text style={styles.searchIcon}>🔍</Text>
+          </Pressable>
+          <View style={styles.progressDots}>
+            {[1, 2, 3, 4, 5].map((ring) => (
+              <View
+                key={ring}
+                style={[
+                  styles.progressDot,
+                  ring <= currentRing && styles.progressDotActive,
+                  ring === currentRing && styles.progressDotCurrent,
+                ]}
+              />
+            ))}
+          </View>
         </View>
       </View>
 
@@ -78,6 +144,15 @@ export default function HomeScreen() {
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.messagesList}
         showsVerticalScrollIndicator={false}
+        onScrollToIndexFailed={(info) => {
+          // Handle scroll to index failure
+          setTimeout(() => {
+            flatListRef.current?.scrollToIndex({
+              index: info.index,
+              animated: true,
+            });
+          }, 100);
+        }}
         ListEmptyComponent={
           <View style={styles.emptyState}>
             <Text style={styles.emptyEmoji}>🌱</Text>
@@ -90,46 +165,129 @@ export default function HomeScreen() {
         ListFooterComponent={isTyping ? <TypingIndicator /> : null}
       />
 
+      {/* Quick Replies */}
+      <QuickReplies
+        ringPhase={ringPhase}
+        onSelect={handleQuickReply}
+        visible={showQuickReplies && !isTyping && messages.length > 0}
+      />
+
       {/* Input Area */}
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
-          placeholder="Tell me about your business..."
-          placeholderTextColor="#999"
+          placeholder={getPlaceholder(ringPhase)}
+          placeholderTextColor={COLORS.bark}
           value={inputText}
-          onChangeText={setInputText}
+          onChangeText={(text) => {
+            setInputText(text);
+            if (text.length > 0) setShowQuickReplies(false);
+            else setShowQuickReplies(true);
+          }}
           multiline
           maxLength={1000}
+          onFocus={() => setShowQuickReplies(false)}
+          onBlur={() => inputText.length === 0 && setShowQuickReplies(true)}
         />
         <Pressable
           style={[styles.sendButton, !inputText.trim() && styles.sendButtonDisabled]}
-          onPress={handleSend}
+          onPress={() => handleSend()}
           disabled={!inputText.trim()}
         >
-          <Text style={styles.sendIcon}>→</Text>
+          <Text style={styles.sendButtonText}>→</Text>
         </Pressable>
       </View>
+
+      {/* Message Search Modal */}
+      <MessageSearch
+        messages={messages}
+        visible={showSearch}
+        onClose={() => setShowSearch(false)}
+        onSelectMessage={handleSearchSelect}
+      />
     </KeyboardAvoidingView>
   );
+}
+
+// Get context-aware placeholder text
+function getPlaceholder(ringPhase: string): string {
+  switch (ringPhase) {
+    case 'core':
+      return 'Tell me about your business...';
+    case 'discover':
+      return 'Enter a website to analyze...';
+    case 'plan':
+      return 'Ask about your strategy...';
+    case 'execute':
+      return 'Update on your progress...';
+    case 'optimize':
+      return 'How can we improve...';
+    default:
+      return 'Type a message...';
+  }
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: COLORS.pure,
   },
   progressHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
     borderBottomWidth: 1,
-    borderBottomColor: '#E8E4DD',
+    borderBottomColor: COLORS.parchment,
+    backgroundColor: COLORS.pure,
+  },
+  progressLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+  },
+  ringBadge: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: COLORS.forest,
+    alignItems: 'center',
+    justifyContent: 'center',
+    ...SHADOWS.sm,
+  },
+  ringNumber: {
+    fontSize: TYPOGRAPHY.titleMedium.fontSize,
+    fontWeight: '700',
+    color: COLORS.pure,
+  },
+  ringInfo: {
+    gap: 2,
+  },
+  ringName: {
+    fontSize: TYPOGRAPHY.labelLarge.fontSize,
+    fontWeight: '600',
+    color: COLORS.carbon,
   },
   progressText: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: TYPOGRAPHY.caption.fontSize,
+    color: COLORS.bark,
+  },
+  progressRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.md,
+  },
+  searchButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: COLORS.cream,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  searchIcon: {
+    fontSize: 16,
   },
   progressDots: {
     flexDirection: 'row',
@@ -139,56 +297,60 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: '#E8E4DD',
+    backgroundColor: COLORS.parchment,
   },
   progressDotActive: {
-    backgroundColor: '#2D5A3D',
+    backgroundColor: COLORS.sage,
+  },
+  progressDotCurrent: {
+    backgroundColor: COLORS.forest,
+    transform: [{ scale: 1.2 }],
   },
   messagesList: {
-    padding: 16,
-    paddingBottom: 8,
+    padding: SPACING.lg,
+    paddingBottom: SPACING.sm,
   },
   emptyState: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 60,
+    paddingVertical: SPACING['6xl'],
   },
   emptyEmoji: {
     fontSize: 48,
-    marginBottom: 16,
+    marginBottom: SPACING.lg,
   },
   emptyTitle: {
-    fontSize: 20,
+    fontSize: TYPOGRAPHY.titleLarge.fontSize,
     fontWeight: '600',
-    color: '#1A1A1A',
-    marginBottom: 8,
+    color: COLORS.carbon,
+    marginBottom: SPACING.sm,
   },
   emptyText: {
-    fontSize: 16,
-    color: '#666',
+    fontSize: TYPOGRAPHY.body.fontSize,
+    color: COLORS.bark,
     textAlign: 'center',
-    paddingHorizontal: 32,
+    paddingHorizontal: SPACING['3xl'],
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'flex-end',
-    padding: 12,
-    paddingBottom: 8,
+    padding: SPACING.md,
+    paddingBottom: SPACING.sm,
     borderTopWidth: 1,
-    borderTopColor: '#E8E4DD',
-    backgroundColor: '#FFFFFF',
+    borderTopColor: COLORS.parchment,
+    backgroundColor: COLORS.pure,
   },
   input: {
     flex: 1,
-    backgroundColor: '#F5F3EF',
-    borderRadius: 24,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
+    backgroundColor: COLORS.cream,
+    borderRadius: RADIUS.xl,
+    paddingHorizontal: SPACING.lg,
+    paddingVertical: SPACING.md,
     paddingRight: 48,
-    fontSize: 16,
+    fontSize: TYPOGRAPHY.body.fontSize,
     maxHeight: 120,
-    color: '#1A1A1A',
+    color: COLORS.carbon,
   },
   sendButton: {
     position: 'absolute',
@@ -197,15 +359,16 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: '#2D5A3D',
+    backgroundColor: COLORS.forest,
     alignItems: 'center',
     justifyContent: 'center',
+    ...SHADOWS.sm,
   },
   sendButtonDisabled: {
-    backgroundColor: '#D4C4A8',
+    backgroundColor: COLORS.sand,
   },
-  sendIcon: {
-    color: '#FFFFFF',
+  sendButtonText: {
+    color: COLORS.pure,
     fontSize: 18,
     fontWeight: '600',
   },

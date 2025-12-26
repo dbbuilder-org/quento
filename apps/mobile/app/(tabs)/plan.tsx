@@ -4,21 +4,78 @@
  * AI App Development powered by ServiceVision (https://www.servicevision.net)
  */
 
-import { StyleSheet, Text, View, ScrollView, Pressable } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { StyleSheet, Text, View, ScrollView, Pressable, Animated } from 'react-native';
 import { useStrategyStore } from '../../stores/strategyStore';
+import { SkeletonCard, SkeletonListItem } from '../../components/ui/Skeleton';
+import AnimatedView from '../../components/ui/AnimatedView';
+import { COLORS, SPACING, RADIUS, TYPOGRAPHY } from '../../constants/theme';
 
 export default function PlanScreen() {
   const { strategy, isGenerating } = useStrategyStore();
+  const brainAnim = useRef(new Animated.Value(0)).current;
+
+  // Animate the brain emoji when generating
+  useEffect(() => {
+    if (isGenerating) {
+      const animation = Animated.loop(
+        Animated.sequence([
+          Animated.timing(brainAnim, {
+            toValue: 1,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+          Animated.timing(brainAnim, {
+            toValue: 0,
+            duration: 1000,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+      animation.start();
+      return () => animation.stop();
+    }
+  }, [isGenerating, brainAnim]);
 
   if (isGenerating) {
     return (
       <View style={styles.container}>
         <View style={styles.loadingContainer}>
-          <Text style={styles.loadingEmoji}>🧠</Text>
+          <Animated.Text
+            style={[
+              styles.loadingEmoji,
+              {
+                transform: [
+                  {
+                    scale: brainAnim.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [1, 1.15],
+                    }),
+                  },
+                  {
+                    rotate: brainAnim.interpolate({
+                      inputRange: [0, 0.5, 1],
+                      outputRange: ['0deg', '5deg', '-5deg'],
+                    }),
+                  },
+                ],
+              },
+            ]}
+          >
+            🧠
+          </Animated.Text>
           <Text style={styles.loadingTitle}>Crafting your strategy</Text>
           <Text style={styles.loadingText}>
             Analyzing your data and generating personalized recommendations...
           </Text>
+
+          {/* Skeleton preview */}
+          <View style={styles.skeletonPreview}>
+            <SkeletonCard />
+            <SkeletonListItem />
+            <SkeletonListItem />
+            <SkeletonListItem />
+          </View>
         </View>
       </View>
     );
@@ -40,73 +97,95 @@ export default function PlanScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <View style={styles.visionCard}>
-        <Text style={styles.visionLabel}>YOUR VISION</Text>
-        <Text style={styles.visionText}>{strategy.visionStatement}</Text>
-      </View>
+      <AnimatedView animation="scale" delay={0}>
+        <View style={styles.visionCard}>
+          <Text style={styles.visionLabel}>YOUR VISION</Text>
+          <Text style={styles.visionText}>{strategy.visionStatement}</Text>
+        </View>
+      </AnimatedView>
 
-      <View style={styles.summarySection}>
-        <Text style={styles.sectionTitle}>Executive Summary</Text>
-        <Text style={styles.summaryText}>{strategy.executiveSummary}</Text>
-      </View>
+      <AnimatedView animation="fadeInUp" delay={100}>
+        <View style={styles.summarySection}>
+          <Text style={styles.sectionTitle}>Executive Summary</Text>
+          <Text style={styles.summaryText}>{strategy.executiveSummary}</Text>
+        </View>
+      </AnimatedView>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Key Strengths</Text>
-        {strategy.keyStrengths.map((strength: string, index: number) => (
-          <View key={index} style={styles.listItem}>
-            <Text style={styles.listIcon}>✓</Text>
-            <Text style={styles.listText}>{strength}</Text>
-          </View>
-        ))}
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Critical Gaps</Text>
-        {strategy.criticalGaps.map((gap: string, index: number) => (
-          <View key={index} style={styles.listItem}>
-            <Text style={styles.listIconWarning}>!</Text>
-            <Text style={styles.listText}>{gap}</Text>
-          </View>
-        ))}
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Recommendations</Text>
-        {strategy.recommendations.map((rec: any, index: number) => (
-          <Pressable key={index} style={styles.recommendationCard}>
-            <View style={styles.recommendationHeader}>
-              <Text style={styles.recommendationTitle}>{rec.title}</Text>
-              <View
-                style={[
-                  styles.priorityBadge,
-                  rec.priority === 'high' && styles.priorityHigh,
-                  rec.priority === 'medium' && styles.priorityMedium,
-                ]}
-              >
-                <Text style={styles.priorityText}>{rec.priority.toUpperCase()}</Text>
+      <AnimatedView animation="fadeInUp" delay={200}>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Key Strengths</Text>
+          {strategy.keyStrengths.map((strength: string, index: number) => (
+            <AnimatedView key={index} animation="fadeInLeft" delay={250 + index * 60}>
+              <View style={styles.listItem}>
+                <Text style={styles.listIcon}>✓</Text>
+                <Text style={styles.listText}>{strength}</Text>
               </View>
-            </View>
-            <Text style={styles.recommendationSummary}>{rec.summary}</Text>
-            <Text style={styles.viewMore}>View details →</Text>
-          </Pressable>
-        ))}
-      </View>
+            </AnimatedView>
+          ))}
+        </View>
+      </AnimatedView>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>90-Day Priorities</Text>
-        {strategy.ninetyDayPriorities.map((priority: string, index: number) => (
-          <View key={index} style={styles.priorityItem}>
-            <View style={styles.priorityNumber}>
-              <Text style={styles.priorityNumberText}>{index + 1}</Text>
-            </View>
-            <Text style={styles.priorityItemText}>{priority}</Text>
-          </View>
-        ))}
-      </View>
+      <AnimatedView animation="fadeInUp" delay={400}>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Critical Gaps</Text>
+          {strategy.criticalGaps.map((gap: string, index: number) => (
+            <AnimatedView key={index} animation="fadeInLeft" delay={450 + index * 60}>
+              <View style={styles.listItem}>
+                <Text style={styles.listIconWarning}>!</Text>
+                <Text style={styles.listText}>{gap}</Text>
+              </View>
+            </AnimatedView>
+          ))}
+        </View>
+      </AnimatedView>
 
-      <Pressable style={styles.actionButton}>
-        <Text style={styles.actionButtonText}>Create Action Plan →</Text>
-      </Pressable>
+      <AnimatedView animation="fadeInUp" delay={600}>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Recommendations</Text>
+          {strategy.recommendations.map((rec: any, index: number) => (
+            <AnimatedView key={index} animation="fadeInUp" delay={650 + index * 100}>
+              <Pressable style={styles.recommendationCard}>
+                <View style={styles.recommendationHeader}>
+                  <Text style={styles.recommendationTitle}>{rec.title}</Text>
+                  <View
+                    style={[
+                      styles.priorityBadge,
+                      rec.priority === 'high' && styles.priorityHigh,
+                      rec.priority === 'medium' && styles.priorityMedium,
+                    ]}
+                  >
+                    <Text style={styles.priorityText}>{rec.priority.toUpperCase()}</Text>
+                  </View>
+                </View>
+                <Text style={styles.recommendationSummary}>{rec.summary}</Text>
+                <Text style={styles.viewMore}>View details →</Text>
+              </Pressable>
+            </AnimatedView>
+          ))}
+        </View>
+      </AnimatedView>
+
+      <AnimatedView animation="fadeInUp" delay={900}>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>90-Day Priorities</Text>
+          {strategy.ninetyDayPriorities.map((priority: string, index: number) => (
+            <AnimatedView key={index} animation="fadeInRight" delay={950 + index * 80}>
+              <View style={styles.priorityItem}>
+                <View style={styles.priorityNumber}>
+                  <Text style={styles.priorityNumberText}>{index + 1}</Text>
+                </View>
+                <Text style={styles.priorityItemText}>{priority}</Text>
+              </View>
+            </AnimatedView>
+          ))}
+        </View>
+      </AnimatedView>
+
+      <AnimatedView animation="bounce" delay={1200}>
+        <Pressable style={styles.actionButton}>
+          <Text style={styles.actionButtonText}>Create Action Plan →</Text>
+        </Pressable>
+      </AnimatedView>
     </ScrollView>
   );
 }
@@ -141,6 +220,12 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
     lineHeight: 22,
+  },
+  skeletonPreview: {
+    width: '100%',
+    marginTop: SPACING['3xl'],
+    opacity: 0.5,
+    paddingHorizontal: SPACING.lg,
   },
   emptyContainer: {
     flex: 1,

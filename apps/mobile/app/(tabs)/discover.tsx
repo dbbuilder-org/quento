@@ -4,7 +4,7 @@
  * AI App Development powered by ServiceVision (https://www.servicevision.net)
  */
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   StyleSheet,
   Text,
@@ -12,13 +12,50 @@ import {
   TextInput,
   Pressable,
   ScrollView,
-  ActivityIndicator,
+  Animated,
 } from 'react-native';
 import { useAnalysisStore } from '../../stores/analysisStore';
+import { SkeletonScoreCard, SkeletonMetrics } from '../../components/ui/Skeleton';
+import AnimatedView from '../../components/ui/AnimatedView';
+import { COLORS, SPACING, RADIUS, TYPOGRAPHY, SHADOWS, ANIMATION } from '../../constants/theme';
 
 export default function DiscoverScreen() {
   const [url, setUrl] = useState('');
-  const { analysis, isAnalyzing, progress, startAnalysis } = useAnalysisStore();
+  const { analysis, isAnalyzing, progress, currentStep, startAnalysis } = useAnalysisStore();
+  const progressAnim = useRef(new Animated.Value(0)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  // Animate progress bar
+  useEffect(() => {
+    Animated.spring(progressAnim, {
+      toValue: progress,
+      tension: 40,
+      friction: 8,
+      useNativeDriver: false,
+    }).start();
+  }, [progress, progressAnim]);
+
+  // Pulse animation for loading circle
+  useEffect(() => {
+    if (isAnalyzing) {
+      const pulse = Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, {
+            toValue: 1.05,
+            duration: 800,
+            useNativeDriver: true,
+          }),
+          Animated.timing(pulseAnim, {
+            toValue: 1,
+            duration: 800,
+            useNativeDriver: true,
+          }),
+        ])
+      );
+      pulse.start();
+      return () => pulse.stop();
+    }
+  }, [isAnalyzing, pulseAnim]);
 
   const handleAnalyze = () => {
     if (!url.trim()) return;
@@ -32,22 +69,48 @@ export default function DiscoverScreen() {
     startAnalysis(cleanUrl);
   };
 
+  const getStepInfo = () => {
+    if (currentStep) return currentStep;
+    if (progress < 25) return 'Scanning website content...';
+    if (progress < 50) return 'Analyzing SEO structure...';
+    if (progress < 75) return 'Finding competitors...';
+    return 'Generating insights...';
+  };
+
   if (isAnalyzing) {
     return (
       <View style={styles.container}>
         <View style={styles.loadingContainer}>
-          <View style={styles.progressCircle}>
-            <Text style={styles.progressNumber}>{progress}%</Text>
-          </View>
+          <Animated.View
+            style={[
+              styles.progressCircle,
+              { transform: [{ scale: pulseAnim }] },
+            ]}
+          >
+            <Text style={styles.progressNumber}>{Math.round(progress)}%</Text>
+          </Animated.View>
           <Text style={styles.loadingTitle}>Analyzing your presence</Text>
-          <Text style={styles.loadingStep}>
-            {progress < 25 && 'Scanning website content...'}
-            {progress >= 25 && progress < 50 && 'Analyzing SEO structure...'}
-            {progress >= 50 && progress < 75 && 'Finding competitors...'}
-            {progress >= 75 && 'Generating insights...'}
-          </Text>
+          <AnimatedView animation="fadeIn" delay={200}>
+            <Text style={styles.loadingStep}>{getStepInfo()}</Text>
+          </AnimatedView>
           <View style={styles.progressBar}>
-            <View style={[styles.progressFill, { width: `${progress}%` }]} />
+            <Animated.View
+              style={[
+                styles.progressFill,
+                {
+                  width: progressAnim.interpolate({
+                    inputRange: [0, 100],
+                    outputRange: ['0%', '100%'],
+                  }),
+                },
+              ]}
+            />
+          </View>
+
+          {/* Skeleton preview of what's coming */}
+          <View style={styles.skeletonPreview}>
+            <SkeletonScoreCard />
+            <SkeletonMetrics />
           </View>
         </View>
       </View>
@@ -57,39 +120,47 @@ export default function DiscoverScreen() {
   if (analysis) {
     return (
       <ScrollView style={styles.container} contentContainerStyle={styles.resultsContent}>
-        <View style={styles.scoreCard}>
-          <Text style={styles.scoreNumber}>{analysis.overallScore}</Text>
-          <Text style={styles.scoreLabel}>Overall Score</Text>
-        </View>
+        <AnimatedView animation="scale" delay={0}>
+          <View style={styles.scoreCard}>
+            <Text style={styles.scoreNumber}>{analysis.overallScore}</Text>
+            <Text style={styles.scoreLabel}>Overall Score</Text>
+          </View>
+        </AnimatedView>
 
         <View style={styles.metricsRow}>
-          <View style={styles.metricCard}>
-            <Text style={styles.metricNumber}>{analysis.scores.seo}</Text>
-            <Text style={styles.metricLabel}>SEO</Text>
-          </View>
-          <View style={styles.metricCard}>
-            <Text style={styles.metricNumber}>{analysis.scores.content}</Text>
-            <Text style={styles.metricLabel}>Content</Text>
-          </View>
-          <View style={styles.metricCard}>
-            <Text style={styles.metricNumber}>{analysis.scores.mobile}</Text>
-            <Text style={styles.metricLabel}>Mobile</Text>
-          </View>
-        </View>
-
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Quick Wins</Text>
-          {analysis.quickWins.map((win: string, index: number) => (
-            <View key={index} style={styles.quickWinItem}>
-              <Text style={styles.quickWinIcon}>⚡</Text>
-              <Text style={styles.quickWinText}>{win}</Text>
-            </View>
+          {[
+            { score: analysis.scores.seo, label: 'SEO' },
+            { score: analysis.scores.content, label: 'Content' },
+            { score: analysis.scores.mobile, label: 'Mobile' },
+          ].map((metric, index) => (
+            <AnimatedView key={metric.label} animation="fadeInUp" delay={100 + index * 100}>
+              <View style={styles.metricCard}>
+                <Text style={styles.metricNumber}>{metric.score}</Text>
+                <Text style={styles.metricLabel}>{metric.label}</Text>
+              </View>
+            </AnimatedView>
           ))}
         </View>
 
-        <Pressable style={styles.continueButton}>
-          <Text style={styles.continueButtonText}>Continue to Strategy →</Text>
-        </Pressable>
+        <AnimatedView animation="fadeInUp" delay={400}>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Quick Wins</Text>
+            {analysis.quickWins.map((win: string, index: number) => (
+              <AnimatedView key={index} animation="fadeInLeft" delay={500 + index * 80}>
+                <View style={styles.quickWinItem}>
+                  <Text style={styles.quickWinIcon}>⚡</Text>
+                  <Text style={styles.quickWinText}>{win}</Text>
+                </View>
+              </AnimatedView>
+            ))}
+          </View>
+        </AnimatedView>
+
+        <AnimatedView animation="fadeInUp" delay={800}>
+          <Pressable style={styles.continueButton}>
+            <Text style={styles.continueButtonText}>Continue to Strategy →</Text>
+          </Pressable>
+        </AnimatedView>
       </ScrollView>
     );
   }
@@ -278,8 +349,13 @@ const styles = StyleSheet.create({
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#2D5A3D',
+    backgroundColor: COLORS.forest,
     borderRadius: 3,
+  },
+  skeletonPreview: {
+    width: '100%',
+    marginTop: SPACING['3xl'],
+    opacity: 0.5,
   },
   resultsContent: {
     padding: 24,
