@@ -28,6 +28,16 @@ async def api_root():
     }
 
 
+@api_router.get("/health")
+async def health_check():
+    """Health check endpoint for load balancers and monitoring."""
+    return {
+        "status": "healthy",
+        "version": "v1",
+        "service": "quento-api",
+    }
+
+
 # Include all routers
 api_router.include_router(auth_router)
 api_router.include_router(chat_router)

@@ -35,12 +35,12 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
 
-    # AI Configuration
+    # AI Configuration - Using gpt-4o-mini for cost efficiency
     LITELLM_API_KEY: str = ""
-    LLM_MODEL: str = "gpt-4o"  # Default model for LiteLLM
-    CHAT_MODEL: str = "gpt-4o"
-    ANALYSIS_MODEL: str = "gpt-4o"
-    FAST_MODEL: str = "gpt-4o-mini"
+    LLM_MODEL: str = "gpt-4o-mini"  # Primary model for LiteLLM
+    CHAT_MODEL: str = "gpt-4o-mini"  # Chat conversations
+    ANALYSIS_MODEL: str = "gpt-4o-mini"  # Website analysis
+    FAST_MODEL: str = "gpt-4o-mini"  # Quick responses
     EMBEDDING_MODEL: str = "text-embedding-3-small"
     OPENAI_API_KEY: str = ""
     ANTHROPIC_API_KEY: str = ""
