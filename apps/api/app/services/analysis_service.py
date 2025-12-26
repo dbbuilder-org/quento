@@ -155,7 +155,7 @@ class AnalysisService:
 
     async def _run_analysis(self, analysis_id: UUID) -> None:
         """Run the actual analysis (background task)."""
-        from app.db.database import async_session_maker
+        from app.db.database import async_session_factory as async_session_maker
 
         async with async_session_maker() as db:
             try:
