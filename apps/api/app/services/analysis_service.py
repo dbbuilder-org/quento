@@ -4,13 +4,14 @@ Analysis Service - Web Scraping and Analysis
 AI App Development powered by ServiceVision (https://www.servicevision.net)
 """
 
+import os
 from datetime import datetime
 from typing import Optional
 from uuid import UUID
 import asyncio
 import httpx
 from bs4 import BeautifulSoup
-from urllib.parse import urlparse, urljoin
+from urllib.parse import urlparse, urljoin, quote_plus
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -28,6 +29,10 @@ from app.schemas.analysis import (
     AnalysisResultsResponse,
 )
 from app.core.exceptions import NotFoundError, ValidationError
+
+# Google PageSpeed Insights API (free tier: 25,000 requests/day)
+PAGESPEED_API_URL = "https://www.googleapis.com/pagespeedonline/v5/runPagespeed"
+PAGESPEED_API_KEY = os.getenv("GOOGLE_PAGESPEED_API_KEY", "")
 
 
 class AnalysisService:
@@ -482,6 +487,331 @@ class AnalysisService:
             ]
 
         return quick_wins[:5]  # Return top 5
+
+    async def get_pagespeed_analysis(self, url: str) -> dict:
+        """
+        Get PageSpeed Insights analysis for a URL.
+        Uses Google PageSpeed Insights API for performance and accessibility metrics.
+        """
+        try:
+            encoded_url = quote_plus(url)
+            params = {
+                "url": url,
+                "category": ["performance", "accessibility", "best-practices", "seo"],
+                "strategy": "mobile",  # Also supports 'desktop'
+            }
+
+            if PAGESPEED_API_KEY:
+                params["key"] = PAGESPEED_API_KEY
+
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                response = await client.get(PAGESPEED_API_URL, params=params)
+
+                if response.status_code != 200:
+                    # Return fallback scores if API fails
+                    return self._get_fallback_pagespeed()
+
+                data = response.json()
+
+            # Extract Lighthouse results
+            lighthouse = data.get("lighthouseResult", {})
+            categories = lighthouse.get("categories", {})
+            audits = lighthouse.get("audits", {})
+
+            # Extract scores (0-1 scale, convert to 0-100)
+            performance_score = int(categories.get("performance", {}).get("score", 0.5) * 100)
+            accessibility_score = int(categories.get("accessibility", {}).get("score", 0.5) * 100)
+            best_practices_score = int(categories.get("best-practices", {}).get("score", 0.5) * 100)
+            seo_score = int(categories.get("seo", {}).get("score", 0.5) * 100)
+
+            # Extract key performance metrics
+            metrics = {
+                "first_contentful_paint": self._extract_metric(audits, "first-contentful-paint"),
+                "largest_contentful_paint": self._extract_metric(audits, "largest-contentful-paint"),
+                "total_blocking_time": self._extract_metric(audits, "total-blocking-time"),
+                "cumulative_layout_shift": self._extract_metric(audits, "cumulative-layout-shift"),
+                "speed_index": self._extract_metric(audits, "speed-index"),
+                "interactive": self._extract_metric(audits, "interactive"),
+            }
+
+            # Extract accessibility issues
+            accessibility_issues = self._extract_accessibility_issues(audits)
+
+            # Extract performance opportunities
+            opportunities = self._extract_opportunities(audits)
+
+            return {
+                "scores": {
+                    "performance": performance_score,
+                    "accessibility": accessibility_score,
+                    "best_practices": best_practices_score,
+                    "seo": seo_score,
+                },
+                "metrics": metrics,
+                "accessibility_issues": accessibility_issues,
+                "opportunities": opportunities,
+                "strategy": "mobile",
+            }
+
+        except Exception as e:
+            # Return fallback if PageSpeed API fails
+            return self._get_fallback_pagespeed()
+
+    def _extract_metric(self, audits: dict, metric_id: str) -> dict:
+        """Extract a specific metric from Lighthouse audits."""
+        audit = audits.get(metric_id, {})
+        return {
+            "value": audit.get("numericValue"),
+            "display_value": audit.get("displayValue", "N/A"),
+            "score": int(audit.get("score", 0.5) * 100),
+        }
+
+    def _extract_accessibility_issues(self, audits: dict) -> list[dict]:
+        """Extract accessibility issues from Lighthouse audits."""
+        issues = []
+        accessibility_audits = [
+            "color-contrast",
+            "image-alt",
+            "label",
+            "link-name",
+            "button-name",
+            "html-has-lang",
+            "document-title",
+            "meta-viewport",
+            "heading-order",
+            "list",
+            "tabindex",
+            "aria-hidden-body",
+            "aria-roles",
+        ]
+
+        for audit_id in accessibility_audits:
+            audit = audits.get(audit_id, {})
+            score = audit.get("score")
+
+            if score is not None and score < 1:
+                issues.append({
+                    "id": audit_id,
+                    "title": audit.get("title", audit_id),
+                    "description": audit.get("description", ""),
+                    "impact": "critical" if score == 0 else "serious" if score < 0.5 else "moderate",
+                    "items_affected": len(audit.get("details", {}).get("items", [])),
+                })
+
+        # Sort by impact severity
+        impact_order = {"critical": 0, "serious": 1, "moderate": 2}
+        issues.sort(key=lambda x: impact_order.get(x.get("impact", "moderate"), 2))
+
+        return issues[:10]  # Return top 10 issues
+
+    def _extract_opportunities(self, audits: dict) -> list[dict]:
+        """Extract performance improvement opportunities."""
+        opportunities = []
+        opportunity_audits = [
+            "render-blocking-resources",
+            "unused-css-rules",
+            "unused-javascript",
+            "modern-image-formats",
+            "uses-optimized-images",
+            "uses-text-compression",
+            "uses-responsive-images",
+            "efficient-animated-content",
+            "offscreen-images",
+            "unminified-css",
+            "unminified-javascript",
+        ]
+
+        for audit_id in opportunity_audits:
+            audit = audits.get(audit_id, {})
+            score = audit.get("score")
+
+            # Only include if there's room for improvement
+            if score is not None and score < 1:
+                savings = audit.get("details", {}).get("overallSavingsMs", 0)
+                if savings > 0 or score < 0.9:
+                    opportunities.append({
+                        "id": audit_id,
+                        "title": audit.get("title", audit_id),
+                        "description": audit.get("description", ""),
+                        "savings_ms": savings,
+                        "display_value": audit.get("displayValue", ""),
+                    })
+
+        # Sort by potential savings
+        opportunities.sort(key=lambda x: x.get("savings_ms", 0), reverse=True)
+
+        return opportunities[:5]  # Return top 5 opportunities
+
+    def _get_fallback_pagespeed(self) -> dict:
+        """Return fallback PageSpeed data when API is unavailable."""
+        return {
+            "scores": {
+                "performance": 70,
+                "accessibility": 75,
+                "best_practices": 80,
+                "seo": 75,
+            },
+            "metrics": {
+                "first_contentful_paint": {"value": 2500, "display_value": "2.5 s", "score": 60},
+                "largest_contentful_paint": {"value": 3500, "display_value": "3.5 s", "score": 50},
+                "total_blocking_time": {"value": 200, "display_value": "200 ms", "score": 70},
+                "cumulative_layout_shift": {"value": 0.1, "display_value": "0.1", "score": 80},
+                "speed_index": {"value": 3000, "display_value": "3.0 s", "score": 65},
+                "interactive": {"value": 4000, "display_value": "4.0 s", "score": 55},
+            },
+            "accessibility_issues": [
+                {
+                    "id": "color-contrast",
+                    "title": "Background and foreground colors need sufficient contrast",
+                    "description": "Low-contrast text is difficult to read",
+                    "impact": "serious",
+                    "items_affected": 3,
+                },
+            ],
+            "opportunities": [
+                {
+                    "id": "render-blocking-resources",
+                    "title": "Eliminate render-blocking resources",
+                    "description": "Resources are blocking the first paint",
+                    "savings_ms": 500,
+                    "display_value": "Potential savings of 500 ms",
+                },
+            ],
+            "strategy": "mobile",
+            "is_fallback": True,
+        }
+
+    def _analyze_accessibility_from_html(self, soup: BeautifulSoup, url: str) -> dict:
+        """
+        Perform basic accessibility analysis from HTML.
+        This supplements PageSpeed accessibility data with additional checks.
+        """
+        issues = []
+        warnings = []
+        passed = []
+
+        # Check for document language
+        html_tag = soup.find("html")
+        if html_tag and html_tag.get("lang"):
+            passed.append({
+                "check": "Document has lang attribute",
+                "details": f"Language: {html_tag.get('lang')}",
+            })
+        else:
+            issues.append({
+                "check": "Missing document language",
+                "impact": "serious",
+                "fix": "Add lang attribute to <html> element",
+            })
+
+        # Check for skip links
+        skip_link = soup.find("a", {"href": "#main"}) or soup.find("a", {"class": "skip-link"})
+        if skip_link:
+            passed.append({"check": "Skip navigation link present"})
+        else:
+            warnings.append({
+                "check": "No skip navigation link",
+                "impact": "moderate",
+                "fix": "Add skip link for keyboard users",
+            })
+
+        # Check for landmark regions
+        landmarks = {
+            "header": soup.find("header") or soup.find(attrs={"role": "banner"}),
+            "nav": soup.find("nav") or soup.find(attrs={"role": "navigation"}),
+            "main": soup.find("main") or soup.find(attrs={"role": "main"}),
+            "footer": soup.find("footer") or soup.find(attrs={"role": "contentinfo"}),
+        }
+
+        for landmark, element in landmarks.items():
+            if element:
+                passed.append({"check": f"{landmark.capitalize()} landmark present"})
+            else:
+                warnings.append({
+                    "check": f"Missing {landmark} landmark",
+                    "impact": "moderate",
+                    "fix": f"Add <{landmark}> element or role='{landmark}'",
+                })
+
+        # Check for form labels
+        inputs = soup.find_all(["input", "select", "textarea"])
+        unlabeled_inputs = 0
+        for inp in inputs:
+            input_type = inp.get("type", "text")
+            if input_type in ["hidden", "submit", "button", "reset"]:
+                continue
+            input_id = inp.get("id")
+            if input_id:
+                label = soup.find("label", {"for": input_id})
+                if not label and not inp.get("aria-label") and not inp.get("aria-labelledby"):
+                    unlabeled_inputs += 1
+            else:
+                if not inp.get("aria-label") and not inp.get("aria-labelledby"):
+                    unlabeled_inputs += 1
+
+        if unlabeled_inputs > 0:
+            issues.append({
+                "check": f"{unlabeled_inputs} form input(s) missing labels",
+                "impact": "critical",
+                "fix": "Associate labels with all form inputs",
+            })
+        elif inputs:
+            passed.append({"check": "All form inputs properly labeled"})
+
+        # Check for buttons with accessible names
+        buttons = soup.find_all(["button", "input"])
+        buttons = [b for b in buttons if b.name == "button" or b.get("type") in ["button", "submit"]]
+        unnamed_buttons = 0
+        for btn in buttons:
+            if btn.name == "input":
+                if not btn.get("value") and not btn.get("aria-label"):
+                    unnamed_buttons += 1
+            else:
+                if not btn.get_text(strip=True) and not btn.get("aria-label"):
+                    unnamed_buttons += 1
+
+        if unnamed_buttons > 0:
+            issues.append({
+                "check": f"{unnamed_buttons} button(s) missing accessible names",
+                "impact": "critical",
+                "fix": "Add text content or aria-label to all buttons",
+            })
+
+        # Check for link names
+        links = soup.find_all("a", href=True)
+        empty_links = 0
+        for link in links:
+            text = link.get_text(strip=True)
+            aria_label = link.get("aria-label")
+            img_alt = link.find("img", alt=True)
+            if not text and not aria_label and not (img_alt and img_alt.get("alt")):
+                empty_links += 1
+
+        if empty_links > 0:
+            warnings.append({
+                "check": f"{empty_links} link(s) have no accessible name",
+                "impact": "serious",
+                "fix": "Add text or aria-label to all links",
+            })
+
+        # Calculate accessibility score based on findings
+        total_checks = len(issues) + len(warnings) + len(passed)
+        if total_checks > 0:
+            score = int((len(passed) / total_checks) * 100)
+        else:
+            score = 75  # Default if no checks could be performed
+
+        return {
+            "score": score,
+            "issues": issues,
+            "warnings": warnings,
+            "passed": passed,
+            "summary": {
+                "issues_count": len(issues),
+                "warnings_count": len(warnings),
+                "passed_count": len(passed),
+            },
+        }
 
 
 async def get_analysis_service(db: AsyncSession) -> AnalysisService:

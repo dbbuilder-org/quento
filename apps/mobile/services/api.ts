@@ -531,7 +531,59 @@ export const analysisApi = {
       checkStatus();
     });
   },
+
+  /**
+   * Get PageSpeed Insights analysis
+   */
+  async getPageSpeedAnalysis(url: string): Promise<ApiResponse<PageSpeedAnalysis>> {
+    const encodedUrl = encodeURIComponent(url);
+    return apiFetch(`/analysis/pagespeed?url=${encodedUrl}`);
+  },
 };
+
+// PageSpeed Analysis Types
+export interface PageSpeedAnalysis {
+  scores: {
+    performance: number;
+    accessibility: number;
+    best_practices: number;
+    seo: number;
+  };
+  metrics: {
+    first_contentful_paint: MetricValue;
+    largest_contentful_paint: MetricValue;
+    total_blocking_time: MetricValue;
+    cumulative_layout_shift: MetricValue;
+    speed_index: MetricValue;
+    interactive: MetricValue;
+  };
+  accessibility_issues: AccessibilityIssue[];
+  opportunities: PerformanceOpportunity[];
+  strategy: 'mobile' | 'desktop';
+  is_fallback?: boolean;
+}
+
+interface MetricValue {
+  value: number | null;
+  display_value: string;
+  score: number;
+}
+
+interface AccessibilityIssue {
+  id: string;
+  title: string;
+  description: string;
+  impact: 'critical' | 'serious' | 'moderate';
+  items_affected: number;
+}
+
+interface PerformanceOpportunity {
+  id: string;
+  title: string;
+  description: string;
+  savings_ms: number;
+  display_value: string;
+}
 
 // ============================================================================
 // Strategy API

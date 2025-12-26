@@ -139,3 +139,40 @@ async def get_analysis_status(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=str(e),
         )
+
+
+@router.get(
+    "/pagespeed",
+    response_model=APIResponse,
+    summary="Get PageSpeed analysis",
+    description="Get Google PageSpeed Insights analysis for a URL.",
+)
+async def get_pagespeed_analysis(
+    url: str = Query(..., description="Website URL to analyze"),
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Get PageSpeed Insights analysis including:
+    - Performance score
+    - Accessibility score
+    - Best practices score
+    - SEO score
+    - Core Web Vitals metrics
+    - Accessibility issues
+    - Performance opportunities
+    """
+    service = AnalysisService(db)
+
+    # Validate URL
+    if not url.startswith(("http://", "https://")):
+        url = "https://" + url
+
+    try:
+        pagespeed_data = await service.get_pagespeed_analysis(url)
+        return APIResponse(data=pagespeed_data)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"PageSpeed analysis failed: {str(e)}",
+        )
