@@ -94,3 +94,15 @@ class AIServiceError(QuentoException):
             status_code=503,
             details=details,
         )
+
+
+class UserAlreadyExistsError(QuentoException):
+    """User already exists."""
+
+    def __init__(self, message: str = "User already exists", details: Optional[Any] = None):
+        super().__init__(
+            message=message,
+            code="USER_EXISTS",
+            status_code=409,
+            details=details,
+        )
