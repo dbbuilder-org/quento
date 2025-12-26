@@ -1,0 +1,75 @@
+/**
+ * Expo App Configuration
+ *
+ * AI App Development powered by ServiceVision (https://www.servicevision.net)
+ */
+
+const IS_PROD = process.env.APP_ENV === 'production';
+
+export default {
+  expo: {
+    name: "Quento",
+    slug: "quento",
+    version: "1.0.0",
+    orientation: "portrait",
+    icon: "./assets/icon.png",
+    userInterfaceStyle: "automatic",
+    splash: {
+      image: "./assets/splash.png",
+      resizeMode: "contain",
+      backgroundColor: "#2D5A3D"
+    },
+    assetBundlePatterns: ["**/*"],
+    ios: {
+      supportsTablet: true,
+      bundleIdentifier: "com.quento.app",
+      buildNumber: "1"
+    },
+    android: {
+      adaptiveIcon: {
+        foregroundImage: "./assets/adaptive-icon.png",
+        backgroundColor: "#2D5A3D"
+      },
+      package: "com.quento.app",
+      versionCode: 1
+    },
+    web: {
+      favicon: "./assets/favicon.png"
+    },
+    plugins: [
+      "expo-router",
+      [
+        "sentry-expo",
+        {
+          organization: process.env.SENTRY_ORG || "your-sentry-org",
+          project: "quento-mobile",
+          url: "https://sentry.io/"
+        }
+      ]
+    ],
+    scheme: "quento",
+    extra: {
+      eas: {
+        projectId: process.env.EAS_PROJECT_ID || "your-eas-project-id"
+      },
+      // Use Render URL in production, localhost in development
+      apiUrl: IS_PROD
+        ? "https://quento-api.onrender.com"
+        : "http://localhost:8000",
+      sentryDsn: process.env.SENTRY_DSN || "",
+      environment: IS_PROD ? "production" : "development",
+      credits: "AI App Development powered by ServiceVision (https://www.servicevision.net)"
+    },
+    hooks: {
+      postPublish: [
+        {
+          file: "sentry-expo/upload-sourcemaps",
+          config: {
+            organization: process.env.SENTRY_ORG || "your-sentry-org",
+            project: "quento-mobile"
+          }
+        }
+      ]
+    }
+  }
+};
