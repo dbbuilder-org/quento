@@ -51,7 +51,7 @@ export default {
     scheme: "quento",
     extra: {
       eas: {
-        projectId: process.env.EAS_PROJECT_ID || "your-eas-project-id"
+        projectId: "3d5c1519-86c7-4265-b6ed-b5617752662c"
       },
       // Always use Render URL (local API not running)
       apiUrl: "https://quento-api.onrender.com",

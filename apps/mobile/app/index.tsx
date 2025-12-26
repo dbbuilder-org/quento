@@ -4,10 +4,38 @@
  * AI App Development powered by ServiceVision (https://www.servicevision.net)
  */
 
-import { Link } from 'expo-router';
-import { StyleSheet, Text, View, Pressable } from 'react-native';
+import { useEffect } from 'react';
+import { Link, router } from 'expo-router';
+import { StyleSheet, Text, View, Pressable, ActivityIndicator } from 'react-native';
+import { useAuth } from '@clerk/clerk-expo';
 
 export default function WelcomeScreen() {
+  const { isSignedIn, isLoaded } = useAuth();
+
+  useEffect(() => {
+    if (isLoaded && isSignedIn) {
+      router.replace('/(tabs)/discover');
+    }
+  }, [isLoaded, isSignedIn]);
+
+  // Show loading while checking auth state
+  if (!isLoaded) {
+    return (
+      <View style={[styles.container, styles.centered]}>
+        <ActivityIndicator size="large" color="#2D5A3D" />
+      </View>
+    );
+  }
+
+  // If signed in, we'll redirect (don't show welcome screen)
+  if (isSignedIn) {
+    return (
+      <View style={[styles.container, styles.centered]}>
+        <ActivityIndicator size="large" color="#2D5A3D" />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <View style={styles.heroSection}>
@@ -52,6 +80,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingTop: 80,
     paddingBottom: 40,
+  },
+  centered: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   heroSection: {
     flex: 1,

@@ -43,31 +43,33 @@ export interface ApiError {
   };
 }
 
-// Token storage
-let accessToken: string | null = null;
-let refreshToken: string | null = null;
+// Token getter function (set by Clerk provider)
+let getClerkToken: (() => Promise<string | null>) | null = null;
 
 /**
- * Set authentication tokens
+ * Set the Clerk token getter function
  */
-export function setTokens(access: string, refresh: string): void {
-  accessToken = access;
-  refreshToken = refresh;
+export function setClerkTokenGetter(getter: () => Promise<string | null>): void {
+  getClerkToken = getter;
 }
 
 /**
- * Clear authentication tokens
+ * Get current access token from Clerk
  */
+export async function getAccessToken(): Promise<string | null> {
+  if (getClerkToken) {
+    return await getClerkToken();
+  }
+  return null;
+}
+
+// Legacy exports for compatibility
+export function setTokens(_access: string, _refresh: string): void {
+  // No-op - Clerk handles tokens
+}
+
 export function clearTokens(): void {
-  accessToken = null;
-  refreshToken = null;
-}
-
-/**
- * Get current access token
- */
-export function getAccessToken(): string | null {
-  return accessToken;
+  // No-op - Clerk handles tokens
 }
 
 /**
@@ -84,8 +86,10 @@ async function apiFetch<T>(
     ...options.headers,
   };
 
-  if (accessToken) {
-    (headers as Record<string, string>)['Authorization'] = `Bearer ${accessToken}`;
+  // Get token from Clerk
+  const token = await getAccessToken();
+  if (token) {
+    (headers as Record<string, string>)['Authorization'] = `Bearer ${token}`;
   }
 
   const response = await fetch(url, {
@@ -93,22 +97,8 @@ async function apiFetch<T>(
     headers,
   });
 
-  // Handle token refresh if needed
-  if (response.status === 401 && refreshToken) {
-    const refreshed = await refreshAccessToken();
-    if (refreshed) {
-      // Retry original request
-      (headers as Record<string, string>)['Authorization'] = `Bearer ${accessToken}`;
-      const retryResponse = await fetch(url, { ...options, headers });
-      if (!retryResponse.ok) {
-        throw new ApiRequestError(retryResponse);
-      }
-      return retryResponse.json();
-    }
-  }
-
   if (!response.ok) {
-    throw new ApiRequestError(response);
+    throw await ApiRequestError.fromResponse(response);
   }
 
   // Handle 204 No Content
@@ -119,40 +109,6 @@ async function apiFetch<T>(
   return response.json();
 }
 
-/**
- * Refresh access token
- */
-async function refreshAccessToken(): Promise<boolean> {
-  if (!refreshToken) return false;
-
-  try {
-    const response = await fetch(
-      `${API_BASE_URL}/api/${API_VERSION}/auth/refresh`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refresh_token: refreshToken }),
-      }
-    );
-
-    if (!response.ok) {
-      clearTokens();
-      return false;
-    }
-
-    const data = await response.json();
-    if (data.success && data.data) {
-      accessToken = data.data.access_token;
-      refreshToken = data.data.refresh_token;
-      return true;
-    }
-
-    return false;
-  } catch {
-    clearTokens();
-    return false;
-  }
-}
 
 /**
  * Custom API error class
@@ -161,13 +117,34 @@ export class ApiRequestError extends Error {
   status: number;
   statusText: string;
   response: Response;
+  detail?: string;
 
-  constructor(response: Response) {
-    super(`API Error: ${response.status} ${response.statusText}`);
+  constructor(response: Response, detail?: string) {
+    const message = detail || `API Error: ${response.status} ${response.statusText}`;
+    super(message);
     this.name = 'ApiRequestError';
     this.status = response.status;
     this.statusText = response.statusText;
     this.response = response;
+    this.detail = detail;
+  }
+
+  static async fromResponse(response: Response): Promise<ApiRequestError> {
+    let detail: string | undefined;
+    try {
+      const body = await response.json();
+      // Handle FastAPI validation errors
+      if (body.detail && Array.isArray(body.detail)) {
+        detail = body.detail.map((d: { msg?: string }) => d.msg || '').join('. ');
+      } else if (body.detail && typeof body.detail === 'string') {
+        detail = body.detail;
+      } else if (body.error?.message) {
+        detail = body.error.message;
+      }
+    } catch {
+      // Couldn't parse JSON, use default message
+    }
+    return new ApiRequestError(response, detail);
   }
 }
 
@@ -386,10 +363,11 @@ export const chatApi = {
   /**
    * Create WebSocket connection for real-time chat
    */
-  createWebSocket(conversationId: string): WebSocket {
+  async createWebSocket(conversationId: string): Promise<WebSocket> {
     const wsUrl = API_BASE_URL.replace('http', 'ws');
+    const token = await getAccessToken();
     return new WebSocket(
-      `${wsUrl}/api/${API_VERSION}/chat/ws/${conversationId}?token=${accessToken}`
+      `${wsUrl}/api/${API_VERSION}/chat/ws/${conversationId}?token=${token || ''}`
     );
   },
 };

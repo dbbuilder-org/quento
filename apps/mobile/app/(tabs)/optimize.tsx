@@ -15,7 +15,7 @@ import {
   RefreshControl,
   Platform,
 } from 'react-native';
-import { useAuthStore } from '../../stores/authStore';
+import { useUser } from '@clerk/clerk-expo';
 import { useAnalysisStore } from '../../stores/analysisStore';
 import { useStrategyStore } from '../../stores/strategyStore';
 import { useChatStore } from '../../stores/chatStore';
@@ -104,13 +104,13 @@ const chartStyles = StyleSheet.create({
 });
 
 export default function OptimizeScreen() {
-  const { user } = useAuthStore();
+  const { user } = useUser();
   const { analysis, websiteUrl, startAnalysis, isAnalyzing, progress } = useAnalysisStore();
   const { strategy } = useStrategyStore();
   const { currentRing } = useChatStore();
   const [refreshing, setRefreshing] = useState(false);
 
-  const ring = currentRing || user?.currentRing || 1;
+  const ring = currentRing || 1;
   const daysActive = useMemo(() => {
     // Calculate days since account creation
     if (!user) return 0;

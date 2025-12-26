@@ -1,10 +1,10 @@
 /**
- * Register Screen
+ * Register Screen - Clerk Authentication
  *
  * AI App Development powered by ServiceVision (https://www.servicevision.net)
  */
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
   StyleSheet,
   Text,
@@ -17,36 +17,133 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Link, router } from 'expo-router';
-import { useAuthStore } from '../../stores/authStore';
+import { useSignUp } from '@clerk/clerk-expo';
 
 export default function RegisterScreen() {
+  const { signUp, setActive, isLoaded } = useSignUp();
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [error, setError] = useState('');
-  const { register, isLoading } = useAuthStore();
+  const [isLoading, setIsLoading] = useState(false);
+  const [pendingVerification, setPendingVerification] = useState(false);
+  const [code, setCode] = useState('');
 
-  const handleRegister = async () => {
+  const handleRegister = useCallback(async () => {
+    if (!isLoaded) return;
+
     setError('');
+    setIsLoading(true);
 
     if (!fullName || !email || !password) {
       setError('Please fill in all required fields');
+      setIsLoading(false);
       return;
     }
 
     if (password.length < 8) {
       setError('Password must be at least 8 characters');
+      setIsLoading(false);
       return;
     }
 
     try {
-      await register(email, password, fullName, companyName);
-      router.replace('/(tabs)/home');
-    } catch (err) {
-      setError('Registration failed. Please try again.');
+      await signUp.create({
+        emailAddress: email,
+        password,
+        firstName: fullName.split(' ')[0],
+        lastName: fullName.split(' ').slice(1).join(' ') || undefined,
+        unsafeMetadata: {
+          companyName: companyName || undefined,
+        },
+      });
+
+      // Send email verification code
+      await signUp.prepareEmailAddressVerification({ strategy: 'email_code' });
+      setPendingVerification(true);
+    } catch (err: unknown) {
+      const clerkError = err as { errors?: Array<{ message: string }> };
+      const message = clerkError.errors?.[0]?.message || 'Registration failed. Please try again.';
+      setError(message);
+    } finally {
+      setIsLoading(false);
     }
-  };
+  }, [isLoaded, fullName, email, password, companyName, signUp]);
+
+  const handleVerify = useCallback(async () => {
+    if (!isLoaded) return;
+
+    setError('');
+    setIsLoading(true);
+
+    try {
+      const result = await signUp.attemptEmailAddressVerification({ code });
+
+      if (result.status === 'complete') {
+        await setActive({ session: result.createdSessionId });
+        router.replace('/(tabs)/discover');
+      } else {
+        setError('Verification incomplete. Please try again.');
+      }
+    } catch (err: unknown) {
+      const clerkError = err as { errors?: Array<{ message: string }> };
+      const message = clerkError.errors?.[0]?.message || 'Invalid verification code';
+      setError(message);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [isLoaded, code, signUp, setActive]);
+
+  if (pendingVerification) {
+    return (
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      >
+        <View style={styles.header}>
+          <Text style={styles.title}>Verify Email</Text>
+          <Text style={styles.subtitle}>We sent a code to {email}</Text>
+        </View>
+
+        <View style={styles.form}>
+          {error ? <Text style={styles.error}>{error}</Text> : null}
+
+          <View style={styles.inputGroup}>
+            <Text style={styles.label}>Verification Code</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter 6-digit code"
+              placeholderTextColor="#999"
+              keyboardType="number-pad"
+              value={code}
+              onChangeText={setCode}
+              maxLength={6}
+            />
+          </View>
+
+          <Pressable
+            style={[styles.button, isLoading && styles.buttonDisabled]}
+            onPress={handleVerify}
+            disabled={isLoading || !isLoaded}
+          >
+            {isLoading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Verify Email</Text>
+            )}
+          </Pressable>
+
+          <Pressable
+            style={styles.resendButton}
+            onPress={() => signUp?.prepareEmailAddressVerification({ strategy: 'email_code' })}
+          >
+            <Text style={styles.resendText}>Resend code</Text>
+          </Pressable>
+        </View>
+      </KeyboardAvoidingView>
+    );
+  }
 
   return (
     <KeyboardAvoidingView
@@ -114,7 +211,7 @@ export default function RegisterScreen() {
           <Pressable
             style={[styles.button, isLoading && styles.buttonDisabled]}
             onPress={handleRegister}
-            disabled={isLoading}
+            disabled={isLoading || !isLoaded}
           >
             {isLoading ? (
               <ActivityIndicator color="#fff" />
@@ -225,5 +322,13 @@ const styles = StyleSheet.create({
     color: '#2D5A3D',
     fontSize: 15,
     fontWeight: '600',
+  },
+  resendButton: {
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  resendText: {
+    color: '#4A7C5C',
+    fontSize: 14,
   },
 });

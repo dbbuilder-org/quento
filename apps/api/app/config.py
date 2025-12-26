@@ -38,11 +38,15 @@ class Settings(BaseSettings):
     # Redis
     REDIS_URL: str = "redis://localhost:6379"
 
-    # JWT Authentication
+    # JWT Authentication (legacy - keeping for backwards compatibility)
     JWT_SECRET_KEY: str = "your-secret-key-change-in-production"
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
     REFRESH_TOKEN_EXPIRE_DAYS: int = 7
+
+    # Clerk Authentication
+    CLERK_SECRET_KEY: str = "sk_test_ygPazt9fxEjqbZkcfs5y3vcHsllyvcNg5nlF8MJLSv"
+    CLERK_PUBLISHABLE_KEY: str = "pk_test_c3Ryb25nLXBvbGxpd29nLTc2LmNsZXJrLmFjY291bnRzLmRldiQ"
 
     # AI Configuration - Using gpt-4o-mini for cost efficiency
     LITELLM_API_KEY: str = ""

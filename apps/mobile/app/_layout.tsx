@@ -8,11 +8,35 @@ import { useEffect } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useColorScheme, View, Text } from 'react-native';
+import { ClerkProvider, ClerkLoaded, useAuth } from '@clerk/clerk-expo';
+import * as SecureStore from 'expo-secure-store';
 import { initSentry, ErrorBoundary, setContext } from '../services/sentry';
 import { COLORS } from '../constants/theme';
+import { setClerkTokenGetter } from '../services/api';
 
 // Initialize Sentry on app load
 initSentry();
+
+// Clerk publishable key
+const CLERK_PUBLISHABLE_KEY = 'pk_test_c3Ryb25nLXBvbGxpd29nLTc2LmNsZXJrLmFjY291bnRzLmRldiQ';
+
+// Token cache for Clerk using SecureStore
+const tokenCache = {
+  async getToken(key: string) {
+    try {
+      return await SecureStore.getItemAsync(key);
+    } catch {
+      return null;
+    }
+  },
+  async saveToken(key: string, value: string) {
+    try {
+      await SecureStore.setItemAsync(key, value);
+    } catch {
+      // Ignore save errors
+    }
+  },
+};
 
 // Error fallback component
 function ErrorFallback({ error }: { error: Error }) {
@@ -53,8 +77,15 @@ function ErrorFallback({ error }: { error: Error }) {
   );
 }
 
-export default function RootLayout() {
+// Inner component that sets up auth token getter
+function AuthenticatedApp() {
   const colorScheme = useColorScheme();
+  const { getToken } = useAuth();
+
+  // Set up the token getter for API calls
+  useEffect(() => {
+    setClerkTokenGetter(getToken);
+  }, [getToken]);
 
   // Set device context for Sentry
   useEffect(() => {
@@ -82,5 +113,15 @@ export default function RootLayout() {
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
     </ErrorBoundary>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY} tokenCache={tokenCache}>
+      <ClerkLoaded>
+        <AuthenticatedApp />
+      </ClerkLoaded>
+    </ClerkProvider>
   );
 }

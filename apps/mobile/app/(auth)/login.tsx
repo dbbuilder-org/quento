@@ -1,10 +1,10 @@
 /**
- * Login Screen
+ * Login Screen - Clerk Authentication
  *
  * AI App Development powered by ServiceVision (https://www.servicevision.net)
  */
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
   StyleSheet,
   Text,
@@ -16,29 +16,48 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Link, router } from 'expo-router';
-import { useAuthStore } from '../../stores/authStore';
+import { useSignIn } from '@clerk/clerk-expo';
 
 export default function LoginScreen() {
+  const { signIn, setActive, isLoaded } = useSignIn();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const { login, isLoading } = useAuthStore();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = async () => {
+  const handleLogin = useCallback(async () => {
+    if (!isLoaded) return;
+
     setError('');
+    setIsLoading(true);
 
     if (!email || !password) {
       setError('Please fill in all fields');
+      setIsLoading(false);
       return;
     }
 
     try {
-      await login(email, password);
-      router.replace('/(tabs)/home');
-    } catch (err) {
-      setError('Invalid email or password');
+      const result = await signIn.create({
+        identifier: email,
+        password,
+      });
+
+      if (result.status === 'complete') {
+        await setActive({ session: result.createdSessionId });
+        router.replace('/(tabs)/discover');
+      } else {
+        // Handle other statuses like needs_second_factor
+        setError('Additional verification required');
+      }
+    } catch (err: unknown) {
+      const clerkError = err as { errors?: Array<{ message: string }> };
+      const message = clerkError.errors?.[0]?.message || 'Invalid email or password';
+      setError(message);
+    } finally {
+      setIsLoading(false);
     }
-  };
+  }, [isLoaded, email, password, signIn, setActive]);
 
   return (
     <KeyboardAvoidingView
@@ -88,7 +107,7 @@ export default function LoginScreen() {
         <Pressable
           style={[styles.button, isLoading && styles.buttonDisabled]}
           onPress={handleLogin}
-          disabled={isLoading}
+          disabled={isLoading || !isLoaded}
         >
           {isLoading ? (
             <ActivityIndicator color="#fff" />

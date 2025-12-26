@@ -60,6 +60,10 @@ export function startTransaction(_name: string, _op: string): { finish: () => vo
 }
 
 // Stub ErrorBoundary - just renders children
-export const ErrorBoundary = ({ children }: { children: React.ReactNode; fallback?: React.ReactNode }) => children;
+interface ErrorBoundaryProps {
+  children: React.ReactNode;
+  fallback?: React.ReactNode | ((props: { error: Error }) => React.ReactNode);
+}
+export const ErrorBoundary = ({ children }: ErrorBoundaryProps): React.ReactNode => children;
 
 export const withSentry = <T extends (...args: any[]) => any>(fn: T): T => fn;
