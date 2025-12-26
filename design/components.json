@@ -1,0 +1,558 @@
+{
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "meta": {
+    "name": "Quento Component Library",
+    "version": "1.0.0",
+    "description": "Figma-compatible component specifications for the Quento mobile app"
+  },
+  "components": {
+    "button": {
+      "description": "Primary action button with pill shape",
+      "variants": {
+        "primary": {
+          "background": "{color.primary.forest}",
+          "text": "{color.primary.pure}",
+          "border": "none"
+        },
+        "secondary": {
+          "background": "transparent",
+          "text": "{color.primary.forest}",
+          "border": "2px solid {color.primary.forest}"
+        },
+        "tertiary": {
+          "background": "transparent",
+          "text": "{color.primary.sage}",
+          "border": "none"
+        }
+      },
+      "sizes": {
+        "default": {
+          "height": "52px",
+          "paddingHorizontal": "{spacing.2xl}",
+          "fontSize": "17px",
+          "fontWeight": "600"
+        },
+        "small": {
+          "height": "44px",
+          "paddingHorizontal": "{spacing.lg}",
+          "fontSize": "15px",
+          "fontWeight": "600"
+        }
+      },
+      "states": {
+        "disabled": {
+          "opacity": "0.5"
+        },
+        "pressed": {
+          "opacity": "0.8"
+        },
+        "loading": {
+          "showSpinner": true
+        }
+      },
+      "borderRadius": "{borderRadius.full}",
+      "iconGap": "{spacing.sm}"
+    },
+    "input": {
+      "description": "Text input field with label and helper text",
+      "structure": {
+        "container": {
+          "marginBottom": "{spacing.lg}"
+        },
+        "label": {
+          "typography": "{typography.labelLarge}",
+          "color": "{color.primary.carbon}",
+          "marginBottom": "{spacing.sm}"
+        },
+        "field": {
+          "height": "52px",
+          "paddingHorizontal": "{spacing.lg}",
+          "borderRadius": "{borderRadius.md}",
+          "borderWidth": "2px"
+        },
+        "helperText": {
+          "typography": "{typography.bodySmall}",
+          "marginTop": "{spacing.sm}"
+        }
+      },
+      "states": {
+        "default": {
+          "background": "{color.secondary.cream}",
+          "borderColor": "transparent",
+          "textColor": "{color.primary.carbon}",
+          "placeholderColor": "{color.secondary.bark}"
+        },
+        "focused": {
+          "background": "{color.primary.pure}",
+          "borderColor": "{color.primary.forest}"
+        },
+        "error": {
+          "borderColor": "{color.semantic.error}",
+          "helperTextColor": "{color.semantic.error}"
+        }
+      },
+      "prefixSuffix": {
+        "paddingHorizontal": "{spacing.lg}"
+      }
+    },
+    "card": {
+      "description": "Container component for content sections",
+      "variants": {
+        "default": {
+          "background": "{color.primary.pure}",
+          "shadow": "{shadow.sm}"
+        },
+        "elevated": {
+          "background": "{color.primary.pure}",
+          "shadow": "{shadow.md}"
+        },
+        "outlined": {
+          "background": "{color.primary.pure}",
+          "border": "1px solid {color.secondary.parchment}"
+        },
+        "filled": {
+          "background": "{color.secondary.cream}"
+        }
+      },
+      "padding": {
+        "none": "0",
+        "small": "{spacing.md}",
+        "default": "{spacing.lg}",
+        "large": "{spacing.2xl}"
+      },
+      "borderRadius": "{borderRadius.lg}",
+      "pressedState": {
+        "opacity": "0.9",
+        "scale": "0.99"
+      }
+    },
+    "chatBubble": {
+      "description": "Chat message bubble for AI conversation",
+      "structure": {
+        "container": {
+          "maxWidth": "85%",
+          "marginBottom": "{spacing.md}"
+        },
+        "bubble": {
+          "padding": "{spacing.md}",
+          "borderRadius": "20px"
+        },
+        "timestamp": {
+          "typography": "{typography.caption}",
+          "color": "{color.secondary.bark}",
+          "marginTop": "{spacing.xs}"
+        }
+      },
+      "variants": {
+        "user": {
+          "alignment": "flex-end",
+          "background": "{color.primary.forest}",
+          "textColor": "{color.primary.pure}",
+          "borderBottomRightRadius": "4px"
+        },
+        "assistant": {
+          "alignment": "flex-start",
+          "background": "{color.secondary.cream}",
+          "textColor": "{color.primary.carbon}",
+          "borderBottomLeftRadius": "4px"
+        }
+      }
+    },
+    "ringVisualization": {
+      "description": "Tree ring growth indicator showing user progress",
+      "structure": {
+        "rings": 5,
+        "labels": ["Core", "Discover", "Plan", "Execute", "Optimize"],
+        "centerIcon": "seedling"
+      },
+      "colors": {
+        "activeRing": "{color.primary.forest}",
+        "completedRing": "{color.primary.sage}",
+        "inactiveRing": "{color.secondary.parchment}"
+      },
+      "sizes": {
+        "default": "200px",
+        "compact": "120px",
+        "large": "280px"
+      }
+    },
+    "progressBar": {
+      "description": "Horizontal progress indicator",
+      "structure": {
+        "track": {
+          "height": "6px",
+          "background": "{color.secondary.parchment}",
+          "borderRadius": "3px"
+        },
+        "fill": {
+          "background": "{color.primary.forest}",
+          "borderRadius": "3px"
+        }
+      },
+      "variants": {
+        "default": {
+          "height": "6px"
+        },
+        "large": {
+          "height": "10px"
+        }
+      },
+      "animation": "{animation.ring}"
+    },
+    "badge": {
+      "description": "Small label for status or category",
+      "variants": {
+        "priority": {
+          "high": {
+            "background": "#FDEAEA",
+            "text": "{color.secondary.bark}"
+          },
+          "medium": {
+            "background": "#FFF9E6",
+            "text": "{color.secondary.bark}"
+          },
+          "low": {
+            "background": "#E8F5E9",
+            "text": "{color.secondary.bark}"
+          }
+        },
+        "status": {
+          "pending": {
+            "background": "{color.secondary.parchment}",
+            "text": "{color.secondary.bark}"
+          },
+          "inProgress": {
+            "background": "#FFF9E6",
+            "text": "{color.semantic.warning}"
+          },
+          "completed": {
+            "background": "#E8F5E9",
+            "text": "{color.semantic.success}"
+          }
+        }
+      },
+      "structure": {
+        "paddingHorizontal": "{spacing.sm}",
+        "paddingVertical": "4px",
+        "borderRadius": "{borderRadius.xs}",
+        "typography": "{typography.labelMedium}"
+      }
+    },
+    "checkbox": {
+      "description": "Circular checkbox for action items",
+      "structure": {
+        "size": "24px",
+        "borderRadius": "12px",
+        "borderWidth": "2px"
+      },
+      "states": {
+        "unchecked": {
+          "borderColor": "{color.secondary.sand}",
+          "background": "transparent"
+        },
+        "inProgress": {
+          "borderColor": "{color.semantic.warning}",
+          "background": "#FFF9E6",
+          "icon": "dot"
+        },
+        "checked": {
+          "borderColor": "{color.semantic.success}",
+          "background": "{color.semantic.success}",
+          "icon": "checkmark",
+          "iconColor": "{color.primary.pure}"
+        }
+      }
+    },
+    "filterTab": {
+      "description": "Horizontal scrollable filter tabs",
+      "structure": {
+        "paddingHorizontal": "{spacing.lg}",
+        "paddingVertical": "{spacing.sm}",
+        "borderRadius": "20px",
+        "gap": "{spacing.sm}"
+      },
+      "states": {
+        "inactive": {
+          "background": "{color.secondary.cream}",
+          "text": "{color.secondary.bark}"
+        },
+        "active": {
+          "background": "{color.primary.forest}",
+          "text": "{color.primary.pure}"
+        }
+      }
+    },
+    "quickReply": {
+      "description": "Tappable suggestion chips in chat",
+      "structure": {
+        "paddingHorizontal": "{spacing.md}",
+        "paddingVertical": "{spacing.sm}",
+        "borderRadius": "{borderRadius.full}",
+        "background": "{color.secondary.cream}",
+        "typography": "{typography.bodySmall}"
+      },
+      "states": {
+        "pressed": {
+          "background": "{color.secondary.parchment}"
+        }
+      }
+    },
+    "skeleton": {
+      "description": "Loading placeholder animation",
+      "variants": {
+        "text": {
+          "height": "16px",
+          "borderRadius": "{borderRadius.xs}"
+        },
+        "card": {
+          "height": "120px",
+          "borderRadius": "{borderRadius.md}"
+        },
+        "circle": {
+          "borderRadius": "{borderRadius.full}"
+        }
+      },
+      "animation": {
+        "type": "shimmer",
+        "duration": "1500ms",
+        "colors": ["{color.secondary.parchment}", "{color.secondary.cream}"]
+      }
+    },
+    "typingIndicator": {
+      "description": "Animated dots showing AI is responding",
+      "structure": {
+        "dotSize": "8px",
+        "dotGap": "4px",
+        "dotCount": 3
+      },
+      "colors": {
+        "dots": "{color.secondary.bark}"
+      },
+      "animation": {
+        "type": "bounce",
+        "duration": "600ms",
+        "stagger": "150ms"
+      }
+    },
+    "scoreCard": {
+      "description": "Large prominent score display",
+      "structure": {
+        "padding": "{spacing.3xl}",
+        "borderRadius": "{borderRadius.lg}",
+        "background": "{color.primary.forest}",
+        "alignment": "center"
+      },
+      "typography": {
+        "score": {
+          "fontSize": "64px",
+          "fontWeight": "700",
+          "color": "{color.primary.pure}"
+        },
+        "label": {
+          "fontSize": "16px",
+          "color": "rgba(255,255,255,0.8)"
+        }
+      }
+    },
+    "metricCard": {
+      "description": "Compact metric display",
+      "structure": {
+        "padding": "{spacing.lg}",
+        "borderRadius": "{borderRadius.md}",
+        "background": "{color.secondary.cream}",
+        "alignment": "center"
+      },
+      "typography": {
+        "value": {
+          "fontSize": "28px",
+          "fontWeight": "600",
+          "color": "{color.primary.carbon}"
+        },
+        "label": {
+          "fontSize": "12px",
+          "color": "{color.secondary.bark}"
+        }
+      }
+    },
+    "listItem": {
+      "description": "Standard list item with icon",
+      "structure": {
+        "paddingVertical": "{spacing.md}",
+        "iconSize": "24px",
+        "iconGap": "{spacing.md}"
+      },
+      "variants": {
+        "strength": {
+          "iconColor": "{color.semantic.success}",
+          "icon": "checkmark"
+        },
+        "gap": {
+          "iconColor": "{color.semantic.warning}",
+          "icon": "exclamation"
+        },
+        "quickWin": {
+          "iconColor": "{color.semantic.warning}",
+          "icon": "lightning",
+          "background": "{color.secondary.cream}",
+          "padding": "{spacing.md}",
+          "borderRadius": "{borderRadius.sm}"
+        }
+      }
+    },
+    "visionCard": {
+      "description": "Prominent vision statement display",
+      "structure": {
+        "padding": "{spacing.2xl}",
+        "borderRadius": "{borderRadius.lg}",
+        "background": "{color.primary.forest}"
+      },
+      "typography": {
+        "label": {
+          "fontSize": "12px",
+          "fontWeight": "600",
+          "letterSpacing": "1px",
+          "color": "rgba(255,255,255,0.7)"
+        },
+        "text": {
+          "fontSize": "18px",
+          "fontWeight": "500",
+          "lineHeight": "26px",
+          "color": "{color.primary.pure}",
+          "fontStyle": "italic"
+        }
+      }
+    },
+    "priorityItem": {
+      "description": "Numbered priority list item",
+      "structure": {
+        "padding": "{spacing.md}",
+        "borderRadius": "{borderRadius.sm}",
+        "background": "{color.secondary.cream}",
+        "gap": "{spacing.md}"
+      },
+      "number": {
+        "size": "28px",
+        "borderRadius": "14px",
+        "background": "{color.primary.forest}",
+        "color": "{color.primary.pure}",
+        "fontSize": "14px",
+        "fontWeight": "600"
+      }
+    },
+    "milestone": {
+      "description": "Achievement timeline item",
+      "structure": {
+        "iconSize": "44px",
+        "iconBorderRadius": "22px",
+        "iconBackground": "{color.secondary.cream}",
+        "gap": "{spacing.md}"
+      },
+      "typography": {
+        "title": {
+          "fontSize": "15px",
+          "fontWeight": "600",
+          "color": "{color.primary.carbon}"
+        },
+        "date": {
+          "fontSize": "13px",
+          "color": "{color.secondary.bark}"
+        }
+      }
+    },
+    "insightCard": {
+      "description": "Contextual insight message",
+      "structure": {
+        "padding": "{spacing.md}",
+        "borderRadius": "{borderRadius.md}",
+        "iconSize": "24px",
+        "gap": "{spacing.md}"
+      },
+      "variants": {
+        "info": {
+          "background": "{color.secondary.cream}"
+        },
+        "success": {
+          "background": "#E8F5E9"
+        },
+        "warning": {
+          "background": "#FFF8E1"
+        }
+      }
+    },
+    "actionCard": {
+      "description": "Action item card with checkbox",
+      "structure": {
+        "padding": "{spacing.lg}",
+        "borderRadius": "{borderRadius.md}",
+        "borderWidth": "1px",
+        "borderColor": "{color.secondary.parchment}",
+        "checkboxGap": "{spacing.md}"
+      },
+      "states": {
+        "pending": {
+          "background": "{color.primary.pure}"
+        },
+        "inProgress": {
+          "borderLeftWidth": "3px",
+          "borderLeftColor": "{color.semantic.warning}"
+        },
+        "completed": {
+          "background": "#F8F8F8",
+          "opacity": "0.8"
+        }
+      }
+    },
+    "sendButton": {
+      "description": "Circular send button for chat input",
+      "structure": {
+        "size": "36px",
+        "borderRadius": "18px",
+        "background": "{color.primary.forest}",
+        "shadow": "{shadow.sm}"
+      },
+      "states": {
+        "disabled": {
+          "background": "{color.secondary.sand}"
+        }
+      },
+      "icon": {
+        "type": "arrow-right",
+        "color": "{color.primary.pure}",
+        "size": "18px"
+      }
+    },
+    "ringBadge": {
+      "description": "Current ring indicator in header",
+      "structure": {
+        "size": "36px",
+        "borderRadius": "18px",
+        "background": "{color.primary.forest}",
+        "shadow": "{shadow.sm}"
+      },
+      "typography": {
+        "fontSize": "18px",
+        "fontWeight": "700",
+        "color": "{color.primary.pure}"
+      }
+    },
+    "progressDots": {
+      "description": "5-dot progress indicator",
+      "structure": {
+        "dotSize": "8px",
+        "gap": "6px"
+      },
+      "states": {
+        "inactive": {
+          "background": "{color.secondary.parchment}"
+        },
+        "completed": {
+          "background": "{color.primary.sage}"
+        },
+        "current": {
+          "background": "{color.primary.forest}",
+          "scale": "1.2"
+        }
+      }
+    }
+  }
+}

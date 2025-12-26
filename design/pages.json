@@ -1,0 +1,670 @@
+{
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "meta": {
+    "name": "Quento Page Layouts",
+    "version": "1.0.0",
+    "description": "Figma-compatible page layout specifications for the Quento mobile app",
+    "deviceFrame": {
+      "type": "iPhone 15 Pro",
+      "width": 393,
+      "height": 852,
+      "safeAreaTop": 59,
+      "safeAreaBottom": 34
+    }
+  },
+  "navigation": {
+    "tabBar": {
+      "height": "83px",
+      "background": "{color.primary.pure}",
+      "borderTop": "1px solid {color.secondary.parchment}",
+      "tabs": [
+        {
+          "id": "discover",
+          "label": "Discover",
+          "icon": "magnifying-glass",
+          "ring": 2
+        },
+        {
+          "id": "home",
+          "label": "Chat",
+          "icon": "chat-bubble",
+          "ring": 1
+        },
+        {
+          "id": "plan",
+          "label": "Plan",
+          "icon": "clipboard",
+          "ring": 3
+        },
+        {
+          "id": "execute",
+          "label": "Execute",
+          "icon": "checkmark-circle",
+          "ring": 4
+        },
+        {
+          "id": "optimize",
+          "label": "Optimize",
+          "icon": "chart-line",
+          "ring": 5
+        }
+      ],
+      "activeColor": "{color.primary.forest}",
+      "inactiveColor": "{color.secondary.bark}"
+    }
+  },
+  "pages": {
+    "login": {
+      "name": "Login",
+      "description": "User sign-in screen with Clerk authentication",
+      "route": "/(auth)/login",
+      "layout": {
+        "background": "{color.primary.pure}",
+        "paddingHorizontal": "{spacing.2xl}",
+        "paddingTop": "80px"
+      },
+      "sections": [
+        {
+          "id": "header",
+          "type": "header",
+          "marginBottom": "40px",
+          "content": {
+            "title": {
+              "text": "Welcome Back",
+              "typography": "{typography.headlineLarge}",
+              "color": "{color.primary.carbon}"
+            },
+            "subtitle": {
+              "text": "Continue your growth journey",
+              "typography": "{typography.bodyLarge}",
+              "color": "{color.secondary.bark}"
+            }
+          }
+        },
+        {
+          "id": "form",
+          "type": "form",
+          "fields": [
+            {
+              "type": "input",
+              "label": "Email",
+              "placeholder": "you@example.com",
+              "keyboardType": "email-address"
+            },
+            {
+              "type": "input",
+              "label": "Password",
+              "placeholder": "Your password",
+              "secureTextEntry": true
+            }
+          ]
+        },
+        {
+          "id": "forgotPassword",
+          "type": "link",
+          "text": "Forgot password?",
+          "alignment": "right",
+          "color": "{color.primary.sage}"
+        },
+        {
+          "id": "submitButton",
+          "type": "button",
+          "variant": "primary",
+          "text": "Sign In",
+          "fullWidth": true
+        },
+        {
+          "id": "footer",
+          "type": "footer",
+          "position": "bottom",
+          "paddingBottom": "40px",
+          "content": {
+            "text": "Don't have an account?",
+            "linkText": "Create one",
+            "linkColor": "{color.primary.forest}"
+          }
+        }
+      ],
+      "errorState": {
+        "background": "#FEE2E2",
+        "textColor": "{color.semantic.error}",
+        "padding": "{spacing.md}",
+        "borderRadius": "{borderRadius.sm}"
+      }
+    },
+    "register": {
+      "name": "Register",
+      "description": "User sign-up screen with email verification",
+      "route": "/(auth)/register",
+      "layout": {
+        "background": "{color.primary.pure}",
+        "paddingHorizontal": "{spacing.2xl}",
+        "paddingTop": "80px"
+      },
+      "sections": [
+        {
+          "id": "header",
+          "type": "header",
+          "content": {
+            "title": "Create Account",
+            "subtitle": "Start your growth journey today"
+          }
+        },
+        {
+          "id": "form",
+          "type": "form",
+          "fields": [
+            {
+              "type": "input",
+              "label": "Full Name",
+              "placeholder": "John Smith"
+            },
+            {
+              "type": "input",
+              "label": "Email",
+              "placeholder": "you@example.com",
+              "keyboardType": "email-address"
+            },
+            {
+              "type": "input",
+              "label": "Password",
+              "placeholder": "Create a password",
+              "secureTextEntry": true
+            }
+          ]
+        },
+        {
+          "id": "submitButton",
+          "type": "button",
+          "variant": "primary",
+          "text": "Create Account"
+        },
+        {
+          "id": "footer",
+          "type": "footer",
+          "content": {
+            "text": "Already have an account?",
+            "linkText": "Sign in"
+          }
+        }
+      ],
+      "verificationState": {
+        "title": "Check Your Email",
+        "subtitle": "Enter the verification code sent to {email}",
+        "codeInput": {
+          "length": 6,
+          "autoFocus": true
+        }
+      }
+    },
+    "discover": {
+      "name": "Discover",
+      "description": "Ring 2: Web presence analysis input and results",
+      "route": "/(tabs)/discover",
+      "ring": 2,
+      "states": ["input", "analyzing", "results"],
+      "inputState": {
+        "layout": {
+          "background": "{color.primary.pure}"
+        },
+        "sections": [
+          {
+            "id": "inputSection",
+            "padding": "{spacing.2xl}",
+            "content": {
+              "title": {
+                "text": "Analyze Your Web Presence",
+                "typography": "{typography.titleLarge}",
+                "color": "{color.primary.carbon}"
+              },
+              "subtitle": {
+                "text": "Enter your website URL and we'll analyze your digital footprint",
+                "typography": "{typography.body}",
+                "color": "{color.secondary.bark}"
+              }
+            }
+          },
+          {
+            "id": "urlInput",
+            "type": "input",
+            "prefix": "https://",
+            "placeholder": "yourwebsite.com"
+          },
+          {
+            "id": "analyzeButton",
+            "type": "button",
+            "text": "Start Analysis",
+            "variant": "primary"
+          },
+          {
+            "id": "featuresSection",
+            "background": "{color.secondary.cream}",
+            "padding": "{spacing.2xl}",
+            "flex": 1,
+            "features": [
+              { "icon": "magnifying-glass", "text": "SEO & Search Visibility" },
+              { "icon": "mobile", "text": "Mobile Responsiveness" },
+              { "icon": "chart", "text": "Competitor Comparison" },
+              { "icon": "chat", "text": "Social Media Presence" }
+            ]
+          }
+        ]
+      },
+      "analyzingState": {
+        "layout": {
+          "centered": true,
+          "padding": "{spacing.2xl}"
+        },
+        "sections": [
+          {
+            "id": "progressCircle",
+            "type": "progressCircle",
+            "size": "120px",
+            "borderWidth": "4px",
+            "borderColor": "{color.primary.forest}",
+            "animation": "pulse"
+          },
+          {
+            "id": "loadingTitle",
+            "text": "Analyzing your presence",
+            "typography": "{typography.titleMedium}"
+          },
+          {
+            "id": "loadingStep",
+            "text": "Scanning website content...",
+            "typography": "{typography.body}",
+            "color": "{color.secondary.bark}"
+          },
+          {
+            "id": "progressBar",
+            "type": "progressBar"
+          },
+          {
+            "id": "skeleton",
+            "type": "skeletonPreview",
+            "opacity": 0.5
+          }
+        ]
+      },
+      "resultsState": {
+        "layout": {
+          "scrollable": true,
+          "padding": "{spacing.2xl}"
+        },
+        "sections": [
+          {
+            "id": "scoreCard",
+            "type": "scoreCard",
+            "animation": "scale"
+          },
+          {
+            "id": "metricsRow",
+            "type": "metricRow",
+            "metrics": ["SEO", "Content", "Mobile"],
+            "gap": "{spacing.md}"
+          },
+          {
+            "id": "quickWins",
+            "type": "listSection",
+            "title": "Quick Wins",
+            "itemType": "quickWin"
+          },
+          {
+            "id": "continueButton",
+            "type": "button",
+            "text": "Continue to Conversation",
+            "icon": "arrow-right"
+          }
+        ]
+      }
+    },
+    "home": {
+      "name": "Chat (Home)",
+      "description": "Ring 1: Core - AI conversation interface",
+      "route": "/(tabs)/home",
+      "ring": 1,
+      "layout": {
+        "background": "{color.primary.pure}",
+        "keyboardAvoiding": true
+      },
+      "sections": [
+        {
+          "id": "progressHeader",
+          "type": "header",
+          "height": "auto",
+          "padding": "{spacing.lg}",
+          "borderBottom": "1px solid {color.secondary.parchment}",
+          "content": {
+            "left": {
+              "ringBadge": true,
+              "ringName": true,
+              "progressText": "Ring X of 5"
+            },
+            "right": {
+              "searchButton": true,
+              "progressDots": true
+            }
+          }
+        },
+        {
+          "id": "messagesList",
+          "type": "messageList",
+          "flex": 1,
+          "padding": "{spacing.lg}",
+          "emptyState": {
+            "icon": "seedling",
+            "title": "Let's grow together",
+            "text": "Tell me about your business and what makes it special."
+          }
+        },
+        {
+          "id": "quickReplies",
+          "type": "quickReplies",
+          "conditional": "showWhenNoTyping"
+        },
+        {
+          "id": "inputContainer",
+          "type": "chatInput",
+          "borderTop": "1px solid {color.secondary.parchment}",
+          "padding": "{spacing.md}",
+          "structure": {
+            "input": {
+              "background": "{color.secondary.cream}",
+              "borderRadius": "{borderRadius.xl}",
+              "multiline": true,
+              "maxHeight": "120px"
+            },
+            "sendButton": {
+              "position": "absolute",
+              "right": "20px"
+            }
+          }
+        }
+      ]
+    },
+    "plan": {
+      "name": "Plan",
+      "description": "Ring 3: Strategy overview and recommendations",
+      "route": "/(tabs)/plan",
+      "ring": 3,
+      "states": ["empty", "generating", "ready"],
+      "emptyState": {
+        "centered": true,
+        "icon": "clipboard",
+        "title": "No Strategy Yet",
+        "text": "Complete your analysis in the Discover tab to generate a personalized growth strategy."
+      },
+      "generatingState": {
+        "centered": true,
+        "icon": {
+          "emoji": "brain",
+          "animation": "wiggle"
+        },
+        "title": "Crafting your strategy",
+        "text": "Analyzing your data and generating personalized recommendations...",
+        "skeleton": true
+      },
+      "readyState": {
+        "scrollable": true,
+        "padding": "{spacing.2xl}",
+        "sections": [
+          {
+            "id": "exportHeader",
+            "type": "header",
+            "content": {
+              "title": "Your Strategy",
+              "exportButton": true
+            }
+          },
+          {
+            "id": "visionCard",
+            "type": "visionCard",
+            "animation": "scale"
+          },
+          {
+            "id": "executiveSummary",
+            "type": "textSection",
+            "title": "Executive Summary"
+          },
+          {
+            "id": "keyStrengths",
+            "type": "listSection",
+            "title": "Key Strengths",
+            "icon": "checkmark",
+            "iconColor": "{color.semantic.success}"
+          },
+          {
+            "id": "criticalGaps",
+            "type": "listSection",
+            "title": "Critical Gaps",
+            "icon": "exclamation",
+            "iconColor": "{color.semantic.warning}"
+          },
+          {
+            "id": "recommendations",
+            "type": "cardList",
+            "title": "Recommendations",
+            "cardType": "recommendationCard"
+          },
+          {
+            "id": "ninetyDayPriorities",
+            "type": "numberedList",
+            "title": "90-Day Priorities"
+          },
+          {
+            "id": "actionButton",
+            "type": "button",
+            "text": "Create Action Plan",
+            "animation": "bounce"
+          }
+        ]
+      }
+    },
+    "execute": {
+      "name": "Execute",
+      "description": "Ring 4: Action items and task management",
+      "route": "/(tabs)/execute",
+      "ring": 4,
+      "layout": {
+        "background": "{color.primary.pure}"
+      },
+      "emptyState": {
+        "centered": true,
+        "icon": "checkmark-circle",
+        "title": "No Actions Yet",
+        "text": "Generate a strategy in the Plan tab to get your action items."
+      },
+      "readyState": {
+        "sections": [
+          {
+            "id": "progressSection",
+            "background": "{color.secondary.cream}",
+            "padding": "{spacing.2xl}",
+            "content": {
+              "progressLabel": "Progress",
+              "progressBar": true,
+              "statusCounts": ["pending", "in_progress", "completed"]
+            }
+          },
+          {
+            "id": "filterTabs",
+            "type": "horizontalScroll",
+            "tabs": ["All", "High", "Pending", "Active", "Done"],
+            "borderBottom": true
+          },
+          {
+            "id": "groupByToggle",
+            "background": "#FAFAFA",
+            "padding": "{spacing.sm} {spacing.lg}",
+            "options": ["None", "Category", "Priority"]
+          },
+          {
+            "id": "actionsList",
+            "type": "list",
+            "itemType": "actionCard",
+            "padding": "{spacing.lg}",
+            "grouped": true
+          }
+        ],
+        "detailModal": {
+          "presentation": "pageSheet",
+          "sections": [
+            { "id": "title", "type": "text" },
+            { "id": "metadata", "type": "badges" },
+            { "id": "description", "type": "text" },
+            { "id": "expectedImpact", "type": "text" },
+            { "id": "statusButtons", "type": "segmentedControl" },
+            { "id": "notes", "type": "textArea" }
+          ]
+        }
+      }
+    },
+    "optimize": {
+      "name": "Optimize",
+      "description": "Ring 5: Growth dashboard and analytics",
+      "route": "/(tabs)/optimize",
+      "ring": 5,
+      "layout": {
+        "scrollable": true,
+        "refreshControl": true,
+        "padding": "{spacing.2xl}",
+        "background": "{color.primary.pure}"
+      },
+      "sections": [
+        {
+          "id": "ringSection",
+          "type": "ringVisualization",
+          "centered": true,
+          "showMessage": true,
+          "showDaysActive": true
+        },
+        {
+          "id": "insightsFeed",
+          "type": "insightCards",
+          "gap": "{spacing.sm}"
+        },
+        {
+          "id": "actionProgress",
+          "type": "progressCard",
+          "title": "Action Progress",
+          "showPercentage": true,
+          "showStats": true
+        },
+        {
+          "id": "scoreBreakdown",
+          "type": "chartSection",
+          "title": "Score Breakdown",
+          "chartType": "horizontalBars",
+          "categories": ["SEO", "Content", "Mobile", "Speed", "Social"]
+        },
+        {
+          "id": "quickStats",
+          "type": "metricsGrid",
+          "title": "Quick Stats",
+          "columns": 2,
+          "metrics": ["Overall Score", "Quick Wins", "Competitors", "Recommendations"]
+        },
+        {
+          "id": "reanalysisCard",
+          "type": "ctaCard",
+          "centered": true,
+          "icon": "refresh",
+          "title": "Time for a check-up?",
+          "text": "Re-analyze your website to see what's changed.",
+          "button": "Run New Analysis"
+        },
+        {
+          "id": "milestones",
+          "type": "timeline",
+          "title": "Milestones",
+          "items": [
+            { "icon": "seedling", "title": "Journey Started" },
+            { "icon": "magnifying-glass", "title": "First Analysis Complete" },
+            { "icon": "clipboard", "title": "Strategy Generated" },
+            { "icon": "checkmark", "title": "First Actions Complete" }
+          ]
+        },
+        {
+          "id": "credits",
+          "type": "footer",
+          "borderTop": true,
+          "text": "AI App Development powered by ServiceVision",
+          "url": "www.servicevision.net"
+        }
+      ]
+    }
+  },
+  "commonPatterns": {
+    "emptyState": {
+      "centered": true,
+      "padding": "{spacing.2xl}",
+      "structure": {
+        "icon": {
+          "size": "64px",
+          "marginBottom": "{spacing.2xl}"
+        },
+        "title": {
+          "typography": "{typography.titleMedium}",
+          "color": "{color.primary.carbon}",
+          "marginBottom": "{spacing.sm}"
+        },
+        "text": {
+          "typography": "{typography.body}",
+          "color": "{color.secondary.bark}",
+          "textAlign": "center",
+          "lineHeight": "22px"
+        }
+      }
+    },
+    "loadingState": {
+      "centered": true,
+      "icon": {
+        "animated": true
+      },
+      "skeleton": {
+        "opacity": 0.5
+      }
+    },
+    "sectionHeader": {
+      "typography": "{typography.titleMedium}",
+      "color": "{color.primary.carbon}",
+      "marginBottom": "{spacing.lg}"
+    },
+    "screenPadding": {
+      "horizontal": "{spacing.2xl}",
+      "vertical": "{spacing.2xl}"
+    }
+  },
+  "animations": {
+    "pageTransitions": {
+      "type": "slide",
+      "duration": "{animation.slow}"
+    },
+    "componentAnimations": {
+      "fadeIn": {
+        "type": "opacity",
+        "from": 0,
+        "to": 1,
+        "duration": "{animation.normal}"
+      },
+      "fadeInUp": {
+        "type": "translate-opacity",
+        "translateY": { "from": 20, "to": 0 },
+        "opacity": { "from": 0, "to": 1 },
+        "duration": "{animation.normal}"
+      },
+      "scale": {
+        "type": "scale",
+        "from": 0.95,
+        "to": 1,
+        "duration": "{animation.normal}"
+      },
+      "bounce": {
+        "type": "spring",
+        "tension": 100,
+        "friction": 8
+      }
+    },
+    "staggerDelay": "60ms"
+  }
+}

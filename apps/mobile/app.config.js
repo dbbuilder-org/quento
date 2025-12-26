@@ -5,6 +5,7 @@
  */
 
 const IS_PROD = process.env.APP_ENV === 'production';
+const STORYBOOK_ENABLED = process.env.STORYBOOK_ENABLED === 'true';
 
 export default {
   expo: {
@@ -57,7 +58,8 @@ export default {
       apiUrl: "https://quento-api.onrender.com",
       sentryDsn: process.env.SENTRY_DSN || "",
       environment: IS_PROD ? "production" : "development",
-      credits: "AI App Development powered by ServiceVision (https://www.servicevision.net)"
+      credits: "AI App Development powered by ServiceVision (https://www.servicevision.net)",
+      storybookEnabled: STORYBOOK_ENABLED
     },
     // hooks: {
     //   postPublish: [
