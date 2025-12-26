@@ -14,14 +14,18 @@ import {
   ScrollView,
   Animated,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useAnalysisStore } from '../../stores/analysisStore';
+import { useChatStore } from '../../stores/chatStore';
 import { SkeletonScoreCard, SkeletonMetrics } from '../../components/ui/Skeleton';
 import AnimatedView from '../../components/ui/AnimatedView';
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY, SHADOWS, ANIMATION } from '../../constants/theme';
 
 export default function DiscoverScreen() {
   const [url, setUrl] = useState('');
-  const { analysis, isAnalyzing, progress, currentStep, startAnalysis } = useAnalysisStore();
+  const router = useRouter();
+  const { analysis, isAnalyzing, progress, currentStep, startAnalysis, websiteUrl } = useAnalysisStore();
+  const { setAnalysisContext } = useChatStore();
   const progressAnim = useRef(new Animated.Value(0)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
@@ -157,8 +161,22 @@ export default function DiscoverScreen() {
         </AnimatedView>
 
         <AnimatedView animation="fadeInUp" delay={800}>
-          <Pressable style={styles.continueButton}>
-            <Text style={styles.continueButtonText}>Continue to Strategy →</Text>
+          <Pressable
+            style={styles.continueButton}
+            onPress={() => {
+              // Pass analysis context to chat and navigate
+              if (analysis && websiteUrl) {
+                setAnalysisContext({
+                  websiteUrl,
+                  overallScore: analysis.overallScore,
+                  scores: analysis.scores,
+                  quickWins: analysis.quickWins,
+                });
+              }
+              router.push('/home');
+            }}
+          >
+            <Text style={styles.continueButtonText}>Continue to Conversation →</Text>
           </Pressable>
         </AnimatedView>
       </ScrollView>

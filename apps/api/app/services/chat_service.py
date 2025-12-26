@@ -24,6 +24,7 @@ from app.schemas.chat import (
     SendMessageResponse,
 )
 from app.core.exceptions import NotFoundError, ValidationError
+from app.services.ai_service import AIService
 
 
 class ChatService:
@@ -48,15 +49,26 @@ class ChatService:
         await self.db.commit()
         await self.db.refresh(conversation)
 
-        # Add welcome message
+        # Add welcome message - reference analysis if available
+        if data and data.initial_context:
+            welcome_content = (
+                "I've reviewed your website analysis and I'm ready to dive deeper. "
+                "Based on what I found, I have some questions to better understand your business "
+                "and how we can improve your online presence. Let's start: "
+                "What's the primary goal you want to achieve with your website?"
+            )
+        else:
+            welcome_content = (
+                "Welcome to Quento! I'm here to help you grow your business. "
+                "To get started, I'd recommend analyzing your website first using the Discover tab - "
+                "this gives me valuable context about your online presence. "
+                "Or, tell me about your business and what you're hoping to achieve."
+            )
+
         welcome_message = Message(
             conversation_id=conversation.id,
             role=MessageRole.ASSISTANT,
-            content=(
-                "Welcome to Quento! 🌳 I'm here to help you grow your business's "
-                "online presence. Let's start at the core - tell me about your "
-                "business or share your website URL so I can understand what you do."
-            ),
+            content=welcome_content,
         )
         self.db.add(welcome_message)
         await self.db.commit()
@@ -157,7 +169,7 @@ class ChatService:
     ) -> SendMessageResponse:
         """
         Send a user message and get AI response.
-        This is a placeholder - actual AI integration happens in the chain service.
+        Uses AIService for intelligent, context-aware responses.
         """
         # Add user message
         user_message = await self.add_message(
@@ -171,9 +183,12 @@ class ChatService:
         # Get conversation for context
         conversation = await self.get_conversation(conversation_id, user_id)
 
-        # Placeholder AI response - will be replaced by LangChain integration
-        ai_response_content = await self._generate_placeholder_response(
-            message_data.content, conversation
+        # Generate AI response using AIService
+        ai_service = AIService(self.db)
+        ai_response_content = await ai_service.generate_response(
+            conversation=conversation,
+            user_message=message_data.content,
+            user_id=user_id,
         )
 
         # Add AI message

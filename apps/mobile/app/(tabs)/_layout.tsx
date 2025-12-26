@@ -59,20 +59,20 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="home"
-        options={{
-          title: 'Your Story',
-          tabBarIcon: ({ focused }) => (
-            <TabIcon focused={focused} ringNumber={1} label="Core" />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="discover"
         options={{
           title: 'Discover',
           tabBarIcon: ({ focused }) => (
-            <TabIcon focused={focused} ringNumber={2} label="Discover" />
+            <TabIcon focused={focused} ringNumber={1} label="Discover" />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="home"
+        options={{
+          title: 'Your Story',
+          tabBarIcon: ({ focused }) => (
+            <TabIcon focused={focused} ringNumber={2} label="Story" />
           ),
         }}
       />

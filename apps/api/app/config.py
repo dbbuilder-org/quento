@@ -54,6 +54,11 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str = ""
     ANTHROPIC_API_KEY: str = ""
 
+    @property
+    def AI_MODEL(self) -> str:
+        """Get the AI model for chat (LiteLLM format)."""
+        return self.CHAT_MODEL
+
     # Rate Limiting
     RATE_LIMIT_PER_MINUTE: int = 100
     CHAT_RATE_LIMIT_PER_MINUTE: int = 30

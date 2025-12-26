@@ -25,6 +25,19 @@ interface Message {
   };
 }
 
+interface AnalysisContext {
+  websiteUrl: string;
+  overallScore: number;
+  scores: {
+    seo: number;
+    content: number;
+    mobile: number;
+    speed: number;
+    social: number;
+  };
+  quickWins: string[];
+}
+
 interface ChatState {
   messages: Message[];
   isTyping: boolean;
@@ -33,9 +46,10 @@ interface ChatState {
   ringPhase: RingPhase;
   conversations: Conversation[];
   error: string | null;
+  analysisContext: AnalysisContext | null;
 
   // Actions
-  createConversation: () => Promise<void>;
+  createConversation: (context?: string) => Promise<void>;
   loadConversation: (id: string) => Promise<void>;
   listConversations: () => Promise<void>;
   sendMessage: (content: string) => Promise<void>;
@@ -44,6 +58,7 @@ interface ChatState {
   advanceRing: () => Promise<void>;
   clearSession: () => void;
   deleteConversation: (id: string) => Promise<void>;
+  setAnalysisContext: (context: AnalysisContext) => void;
 }
 
 // Map ring phase to ring number
@@ -88,10 +103,32 @@ export const useChatStore = create<ChatState>()(
       ringPhase: 'core',
       conversations: [],
       error: null,
+      analysisContext: null,
 
-      createConversation: async () => {
+      setAnalysisContext: (context: AnalysisContext) => {
+        set({ analysisContext: context });
+      },
+
+      createConversation: async (context?: string) => {
+        const { analysisContext } = get();
+
         try {
-          const response = await chatApi.createConversation();
+          // Pass analysis context to the conversation if available
+          const initialContext = analysisContext
+            ? {
+                website_analysis: {
+                  url: analysisContext.websiteUrl,
+                  overall_score: analysisContext.overallScore,
+                  scores: analysisContext.scores,
+                  quick_wins: analysisContext.quickWins,
+                },
+                ...(context ? { user_context: context } : {}),
+              }
+            : context
+            ? { user_context: context }
+            : undefined;
+
+          const response = await chatApi.createConversation(initialContext);
 
           if (response.success && response.data) {
             const conversation = response.data;
