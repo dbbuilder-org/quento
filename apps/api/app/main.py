@@ -4,11 +4,26 @@ Quento API - Main Application Entry Point
 AI App Development powered by ServiceVision (https://www.servicevision.net)
 """
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+import sys
+import traceback
 
-from app.api.v1.router import api_router
-from app.config import settings
+# Log startup for debugging
+print("Starting Quento API...", flush=True)
+
+try:
+    from fastapi import FastAPI
+    from fastapi.middleware.cors import CORSMiddleware
+    print("FastAPI imported successfully", flush=True)
+
+    from app.config import settings
+    print(f"Config loaded: ENV={settings.ENVIRONMENT}", flush=True)
+
+    from app.api.v1.router import api_router
+    print("Router imported successfully", flush=True)
+except Exception as e:
+    print(f"STARTUP ERROR: {e}", flush=True)
+    traceback.print_exc()
+    sys.exit(1)
 
 app = FastAPI(
     title="Quento API",
