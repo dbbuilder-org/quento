@@ -56,10 +56,11 @@ services:
     maxmemoryPolicy: allkeys-lru
     ipAllowList: []
 
-# PostgreSQL Database (basic plan - $7/month)
+# PostgreSQL Database (basic-256mb - flexible plan)
 databases:
   - name: quento-db
     region: oregon
-    plan: basic
+    plan: basic-256mb
+    diskSizeGB: 5
     databaseName: quento
     user: quento
