@@ -44,7 +44,7 @@ class Conversation(Base):
     ring_phase = Column(Enum(RingPhase), default=RingPhase.CORE)
     status = Column(Enum(ConversationStatus), default=ConversationStatus.ACTIVE)
     summary = Column(Text, nullable=True)
-    metadata = Column(JSON, default=dict)
+    extra_data = Column(JSON, default=dict)
 
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -67,7 +67,7 @@ class Message(Base):
     role = Column(Enum(MessageRole), nullable=False)
     content = Column(Text, nullable=False)
     tokens_used = Column(Integer, nullable=True)
-    metadata = Column(JSON, default=dict)
+    extra_data = Column(JSON, default=dict)
 
     created_at = Column(DateTime, default=datetime.utcnow)
 
