@@ -218,7 +218,7 @@ class AnalysisService:
                     scores["social"],
                 ]) // 5
 
-                # Save results
+                # Save results with RAG context
                 analysis.results = {
                     "overall_score": overall_score,
                     "scores": scores,
@@ -227,6 +227,14 @@ class AnalysisService:
                     "competitors": [c.model_dump() for c in competitors],
                     "social_presence": social_presence,
                     "quick_wins": quick_wins,
+                    # RAG context for AI conversations
+                    "website_content": {
+                        "title": website_data.get("title"),
+                        "description": website_data.get("meta_description"),
+                        "headings": website_data.get("h1_tags", []) + website_data.get("h2_tags", []),
+                        "raw_content": website_data.get("raw_content", ""),
+                        "key_paragraphs": website_data.get("key_paragraphs", []),
+                    },
                 }
                 analysis.status = AnalysisStatus.COMPLETED
                 analysis.progress = 100
@@ -258,6 +266,25 @@ class AnalysisService:
 
             soup = BeautifulSoup(response.text, "html.parser")
 
+            # Extract main content text for RAG context
+            # Remove script and style elements
+            for element in soup(["script", "style", "nav", "footer", "header"]):
+                element.decompose()
+
+            # Get clean text content
+            raw_text = soup.get_text(separator="\n", strip=True)
+            # Limit to ~8000 chars for context window efficiency
+            raw_content = raw_text[:8000] if len(raw_text) > 8000 else raw_text
+
+            # Extract key paragraphs (first 10 substantive ones)
+            paragraphs = []
+            for p in soup.find_all("p"):
+                text = p.get_text(strip=True)
+                if len(text) > 50:  # Only meaningful paragraphs
+                    paragraphs.append(text)
+                if len(paragraphs) >= 10:
+                    break
+
             return {
                 "url": str(response.url),
                 "status_code": response.status_code,
@@ -275,6 +302,9 @@ class AnalysisService:
                 "has_canonical": bool(soup.find("link", {"rel": "canonical"})),
                 "word_count": len(soup.get_text().split()),
                 "html_size": len(response.text),
+                # RAG context fields
+                "raw_content": raw_content,
+                "key_paragraphs": paragraphs,
             }
 
     def _get_meta(self, soup: BeautifulSoup, name: str) -> Optional[str]:

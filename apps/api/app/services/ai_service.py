@@ -175,6 +175,9 @@ class AIService:
         analysis = result.scalar_one_or_none()
 
         if analysis and analysis.results:
+            # Extract website content for RAG context
+            website_content = analysis.results.get("website_content", {})
+
             return {
                 "website_url": analysis.website_url,
                 "overall_score": analysis.results.get("overall_score"),
@@ -183,6 +186,12 @@ class AIService:
                 "content_analysis": analysis.results.get("content_analysis"),
                 "seo_analysis": analysis.results.get("seo_analysis"),
                 "competitors": analysis.results.get("competitors"),
+                # RAG content
+                "website_title": website_content.get("title"),
+                "website_description": website_content.get("description"),
+                "website_headings": website_content.get("headings", []),
+                "website_content": website_content.get("raw_content", ""),
+                "key_paragraphs": website_content.get("key_paragraphs", []),
             }
         return None
 
@@ -203,6 +212,13 @@ class AIService:
 
         # Add analysis context to system prompt if available
         if analysis_context:
+            # Build website content section for RAG
+            website_title = analysis_context.get('website_title', 'Unknown')
+            website_desc = analysis_context.get('website_description', 'No description')
+            headings = analysis_context.get('website_headings', [])[:10]  # Top 10 headings
+            key_paragraphs = analysis_context.get('key_paragraphs', [])[:5]  # Top 5 paragraphs
+            raw_content = analysis_context.get('website_content', '')[:3000]  # Limit content
+
             system_content += f"""
 
 WEBSITE ANALYSIS DATA:
@@ -222,7 +238,25 @@ Quick Wins Identified:
 Content Issues:
 {json.dumps(analysis_context.get('content_analysis', {}).get('issues', []), indent=2)}
 
-Use this data to ask relevant, specific questions about their website and business."""
+---
+WEBSITE CONTENT (for understanding the business):
+Title: {website_title}
+Description: {website_desc}
+
+Main Headings:
+{chr(10).join(f"- {h}" for h in headings) if headings else "None found"}
+
+Key Content Excerpts:
+{chr(10).join(f"• {p[:300]}..." if len(p) > 300 else f"• {p}" for p in key_paragraphs) if key_paragraphs else "No content extracted"}
+
+Full Page Content Summary:
+{raw_content[:2000]}{"..." if len(raw_content) > 2000 else ""}
+---
+
+Use this website content to understand what the business does, their products/services,
+messaging, and value proposition. Reference specific details from their website when asking
+questions or providing recommendations. This makes the conversation more personalized and
+shows you understand their business."""
 
         # Add business context if available
         if conversation.business_context:
