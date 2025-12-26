@@ -7,6 +7,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { authApi, setTokens, clearTokens, User as ApiUser } from '../services/api';
 
 interface User {
   id: string;
@@ -22,13 +23,27 @@ interface AuthState {
   refreshToken: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  error: string | null;
 
   // Actions
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, fullName: string, companyName?: string) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   setUser: (user: User) => void;
   refreshAccessToken: () => Promise<void>;
+  clearError: () => void;
+  restoreSession: () => void;
+}
+
+// Convert API user to store user format
+function mapApiUser(apiUser: ApiUser): User {
+  return {
+    id: apiUser.id,
+    email: apiUser.email,
+    fullName: apiUser.full_name || undefined,
+    companyName: apiUser.company_name || undefined,
+    currentRing: apiUser.current_ring,
+  };
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -39,69 +54,72 @@ export const useAuthStore = create<AuthState>()(
       refreshToken: null,
       isLoading: false,
       isAuthenticated: false,
+      error: null,
 
       login: async (email: string, password: string) => {
-        set({ isLoading: true });
+        set({ isLoading: true, error: null });
         try {
-          // API call would go here
-          // const response = await api.post('/auth/login', { email, password });
+          const response = await authApi.login(email, password);
 
-          // Mock response for development
-          const mockUser: User = {
-            id: 'usr_' + Math.random().toString(36).substr(2, 9),
-            email,
-            fullName: 'Demo User',
-            currentRing: 1,
-          };
+          if (response.success && response.data) {
+            const { user, tokens } = response.data;
 
-          set({
-            user: mockUser,
-            accessToken: 'mock_access_token',
-            refreshToken: 'mock_refresh_token',
-            isAuthenticated: true,
-            isLoading: false,
-          });
+            set({
+              user: mapApiUser(user),
+              accessToken: tokens.access_token,
+              refreshToken: tokens.refresh_token,
+              isAuthenticated: true,
+              isLoading: false,
+            });
+          } else {
+            throw new Error('Login failed');
+          }
         } catch (error) {
-          set({ isLoading: false });
+          const message = error instanceof Error ? error.message : 'Login failed';
+          set({ isLoading: false, error: message });
           throw error;
         }
       },
 
       register: async (email: string, password: string, fullName: string, companyName?: string) => {
-        set({ isLoading: true });
+        set({ isLoading: true, error: null });
         try {
-          // API call would go here
-          // const response = await api.post('/auth/register', { email, password, fullName, companyName });
+          const response = await authApi.register(email, password, fullName, companyName);
 
-          // Mock response for development
-          const mockUser: User = {
-            id: 'usr_' + Math.random().toString(36).substr(2, 9),
-            email,
-            fullName,
-            companyName,
-            currentRing: 1,
-          };
+          if (response.success && response.data) {
+            const { user, tokens } = response.data;
 
-          set({
-            user: mockUser,
-            accessToken: 'mock_access_token',
-            refreshToken: 'mock_refresh_token',
-            isAuthenticated: true,
-            isLoading: false,
-          });
+            set({
+              user: mapApiUser(user),
+              accessToken: tokens.access_token,
+              refreshToken: tokens.refresh_token,
+              isAuthenticated: true,
+              isLoading: false,
+            });
+          } else {
+            throw new Error('Registration failed');
+          }
         } catch (error) {
-          set({ isLoading: false });
+          const message = error instanceof Error ? error.message : 'Registration failed';
+          set({ isLoading: false, error: message });
           throw error;
         }
       },
 
-      logout: () => {
-        set({
-          user: null,
-          accessToken: null,
-          refreshToken: null,
-          isAuthenticated: false,
-        });
+      logout: async () => {
+        try {
+          await authApi.logout();
+        } catch {
+          // Ignore logout errors, still clear local state
+        } finally {
+          clearTokens();
+          set({
+            user: null,
+            accessToken: null,
+            refreshToken: null,
+            isAuthenticated: false,
+          });
+        }
       },
 
       setUser: (user: User) => {
@@ -114,12 +132,30 @@ export const useAuthStore = create<AuthState>()(
           throw new Error('No refresh token available');
         }
 
-        // API call would go here
-        // const response = await api.post('/auth/refresh', { refresh_token: refreshToken });
+        try {
+          const response = await authApi.login('', ''); // Token refresh is handled internally
+          if (response.success && response.data) {
+            set({
+              accessToken: response.data.tokens.access_token,
+              refreshToken: response.data.tokens.refresh_token,
+            });
+          }
+        } catch {
+          // If refresh fails, logout
+          get().logout();
+        }
+      },
 
-        set({
-          accessToken: 'new_mock_access_token',
-        });
+      clearError: () => {
+        set({ error: null });
+      },
+
+      // Restore session from persisted storage
+      restoreSession: () => {
+        const { accessToken, refreshToken } = get();
+        if (accessToken && refreshToken) {
+          setTokens(accessToken, refreshToken);
+        }
       },
     }),
     {
@@ -131,6 +167,12 @@ export const useAuthStore = create<AuthState>()(
         refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
       }),
+      onRehydrateStorage: () => (state) => {
+        // Restore API tokens when store rehydrates
+        if (state?.accessToken && state?.refreshToken) {
+          setTokens(state.accessToken, state.refreshToken);
+        }
+      },
     }
   )
 );

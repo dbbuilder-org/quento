@@ -37,10 +37,13 @@ class Settings(BaseSettings):
 
     # AI Configuration
     LITELLM_API_KEY: str = ""
+    LLM_MODEL: str = "gpt-4o"  # Default model for LiteLLM
     CHAT_MODEL: str = "gpt-4o"
     ANALYSIS_MODEL: str = "gpt-4o"
     FAST_MODEL: str = "gpt-4o-mini"
     EMBEDDING_MODEL: str = "text-embedding-3-small"
+    OPENAI_API_KEY: str = ""
+    ANTHROPIC_API_KEY: str = ""
 
     # Rate Limiting
     RATE_LIMIT_PER_MINUTE: int = 100

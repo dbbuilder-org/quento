@@ -6,6 +6,11 @@ AI App Development powered by ServiceVision (https://www.servicevision.net)
 
 from fastapi import APIRouter
 
+from app.api.v1.auth import router as auth_router
+from app.api.v1.chat import router as chat_router
+from app.api.v1.analysis import router as analysis_router
+from app.api.v1.strategy import router as strategy_router
+
 api_router = APIRouter()
 
 
@@ -19,15 +24,12 @@ async def api_root():
             "chat": "/api/v1/chat",
             "analysis": "/api/v1/analysis",
             "strategy": "/api/v1/strategy",
-            "users": "/api/v1/users",
         },
     }
 
 
-# TODO: Import and include routers as they are implemented
-# from app.api.v1 import auth, chat, analysis, strategy, users
-# api_router.include_router(auth.router, prefix="/auth", tags=["Authentication"])
-# api_router.include_router(chat.router, prefix="/chat", tags=["Chat"])
-# api_router.include_router(analysis.router, prefix="/analysis", tags=["Analysis"])
-# api_router.include_router(strategy.router, prefix="/strategy", tags=["Strategy"])
-# api_router.include_router(users.router, prefix="/users", tags=["Users"])
+# Include all routers
+api_router.include_router(auth_router)
+api_router.include_router(chat_router)
+api_router.include_router(analysis_router)
+api_router.include_router(strategy_router)

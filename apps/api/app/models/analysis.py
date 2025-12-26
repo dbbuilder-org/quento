@@ -32,6 +32,8 @@ class Analysis(Base):
     website_url = Column(String(500), nullable=False)
     status = Column(Enum(AnalysisStatus), default=AnalysisStatus.PENDING)
     progress = Column(Integer, default=0)
+    include_competitors = Column(Integer, default=True)
+    include_social = Column(Integer, default=True)
     results = Column(JSON, nullable=True)
     error_message = Column(Text, nullable=True)
 

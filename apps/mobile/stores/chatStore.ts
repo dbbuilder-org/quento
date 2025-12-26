@@ -7,6 +7,13 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  chatApi,
+  RingPhase,
+  Message as ApiMessage,
+  Conversation,
+  ConversationDetail,
+} from '../services/api';
 
 interface Message {
   id: string;
@@ -14,7 +21,7 @@ interface Message {
   content: string;
   timestamp: Date;
   metadata?: {
-    ringPhase?: 'core' | 'discover' | 'plan' | 'execute' | 'optimize';
+    ringPhase?: RingPhase;
   };
 }
 
@@ -22,17 +29,47 @@ interface ChatState {
   messages: Message[];
   isTyping: boolean;
   currentRing: number;
-  sessionId: string | null;
+  conversationId: string | null;
+  ringPhase: RingPhase;
+  conversations: Conversation[];
+  error: string | null;
 
   // Actions
-  sendMessage: (content: string) => void;
+  createConversation: () => Promise<void>;
+  loadConversation: (id: string) => Promise<void>;
+  listConversations: () => Promise<void>;
+  sendMessage: (content: string) => Promise<void>;
   addMessage: (message: Omit<Message, 'id' | 'timestamp'>) => void;
   setTyping: (typing: boolean) => void;
-  advanceRing: () => void;
+  advanceRing: () => Promise<void>;
   clearSession: () => void;
+  deleteConversation: (id: string) => Promise<void>;
 }
 
-// Initial welcome message
+// Map ring phase to ring number
+const ringPhaseToNumber: Record<RingPhase, number> = {
+  core: 1,
+  discover: 2,
+  plan: 3,
+  execute: 4,
+  optimize: 5,
+};
+
+// Map ring number to phase
+const numberToRingPhase: RingPhase[] = ['core', 'discover', 'plan', 'execute', 'optimize'];
+
+// Convert API message to store message
+function mapApiMessage(msg: ApiMessage): Message {
+  return {
+    id: msg.id,
+    role: msg.role,
+    content: msg.content,
+    timestamp: new Date(msg.created_at),
+    metadata: msg.metadata as Message['metadata'],
+  };
+}
+
+// Initial welcome message for offline mode
 const WELCOME_MESSAGE: Message = {
   id: 'welcome',
   role: 'assistant',
@@ -47,43 +84,131 @@ export const useChatStore = create<ChatState>()(
       messages: [WELCOME_MESSAGE],
       isTyping: false,
       currentRing: 1,
-      sessionId: null,
+      conversationId: null,
+      ringPhase: 'core',
+      conversations: [],
+      error: null,
 
-      sendMessage: (content: string) => {
-        const userMessage: Message = {
-          id: 'msg_' + Date.now(),
+      createConversation: async () => {
+        try {
+          const response = await chatApi.createConversation();
+
+          if (response.success && response.data) {
+            const conversation = response.data;
+
+            set({
+              conversationId: conversation.id,
+              ringPhase: conversation.ring_phase,
+              currentRing: ringPhaseToNumber[conversation.ring_phase],
+              messages: [],
+              error: null,
+            });
+
+            // Load full conversation with welcome message
+            await get().loadConversation(conversation.id);
+          }
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Failed to create conversation';
+          set({ error: message });
+        }
+      },
+
+      loadConversation: async (id: string) => {
+        try {
+          const response = await chatApi.getConversation(id);
+
+          if (response.success && response.data) {
+            const detail = response.data;
+
+            set({
+              conversationId: detail.id,
+              ringPhase: detail.ring_phase,
+              currentRing: ringPhaseToNumber[detail.ring_phase],
+              messages: detail.messages.map(mapApiMessage),
+              error: null,
+            });
+          }
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Failed to load conversation';
+          set({ error: message });
+        }
+      },
+
+      listConversations: async () => {
+        try {
+          const response = await chatApi.listConversations();
+
+          if (response.success) {
+            set({ conversations: response.data, error: null });
+          }
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Failed to list conversations';
+          set({ error: message });
+        }
+      },
+
+      sendMessage: async (content: string) => {
+        const { conversationId } = get();
+
+        // Add user message immediately for responsiveness
+        const tempUserMessage: Message = {
+          id: 'temp_' + Date.now(),
           role: 'user',
           content,
           timestamp: new Date(),
         };
 
         set((state) => ({
-          messages: [...state.messages, userMessage],
+          messages: [...state.messages, tempUserMessage],
           isTyping: true,
+          error: null,
         }));
 
-        // Simulate AI response (would be API call in production)
-        setTimeout(() => {
-          const responses = [
-            "That's wonderful! Tell me more about your customers. Who are the people you love serving?",
-            "I can see the passion in your story. What's your biggest challenge right now when it comes to growing online?",
-            "Great insight! Do you have a website I could look at, or would you like to describe your current online presence?",
-            "Your story is compelling. Let's discover how we can share it with more people. Share your website URL and I'll analyze your digital presence.",
-          ];
+        // If no conversation, create one first
+        if (!conversationId) {
+          try {
+            const createResponse = await chatApi.createConversation();
+            if (createResponse.success && createResponse.data) {
+              set({ conversationId: createResponse.data.id });
+            } else {
+              throw new Error('Failed to create conversation');
+            }
+          } catch (error) {
+            set({ isTyping: false, error: 'Failed to start conversation' });
+            return;
+          }
+        }
 
-          const aiMessage: Message = {
-            id: 'msg_' + Date.now(),
-            role: 'assistant',
-            content: responses[Math.floor(Math.random() * responses.length)],
-            timestamp: new Date(),
-            metadata: { ringPhase: 'core' },
-          };
+        const activeConversationId = get().conversationId;
+        if (!activeConversationId) return;
 
-          set((state) => ({
-            messages: [...state.messages, aiMessage],
-            isTyping: false,
-          }));
-        }, 1500);
+        try {
+          const response = await chatApi.sendMessage(activeConversationId, content);
+
+          if (response.success && response.data) {
+            const { user_message, assistant_message, session_update } = response.data;
+
+            // Replace temp message and add AI response
+            set((state) => ({
+              messages: [
+                ...state.messages.filter((m) => m.id !== tempUserMessage.id),
+                mapApiMessage(user_message),
+                mapApiMessage(assistant_message),
+              ],
+              isTyping: false,
+              ringPhase: session_update.ring_phase,
+              currentRing: ringPhaseToNumber[session_update.ring_phase],
+            }));
+
+            // Check if should advance ring
+            if (session_update.should_advance) {
+              await get().advanceRing();
+            }
+          }
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Failed to send message';
+          set({ isTyping: false, error: message });
+        }
       },
 
       addMessage: (message) => {
@@ -103,23 +228,59 @@ export const useChatStore = create<ChatState>()(
         set({ isTyping: typing });
       },
 
-      advanceRing: () => {
-        set((state) => ({
-          currentRing: Math.min(state.currentRing + 1, 5),
-        }));
+      advanceRing: async () => {
+        const { conversationId, currentRing } = get();
+        const nextRing = Math.min(currentRing + 1, 5);
+        const nextPhase = numberToRingPhase[nextRing - 1];
+
+        if (conversationId && nextRing !== currentRing) {
+          try {
+            await chatApi.updateRingPhase(conversationId, nextPhase);
+            set({
+              currentRing: nextRing,
+              ringPhase: nextPhase,
+            });
+          } catch {
+            // Still update locally even if API fails
+            set({
+              currentRing: nextRing,
+              ringPhase: nextPhase,
+            });
+          }
+        }
       },
 
       clearSession: () => {
         set({
           messages: [WELCOME_MESSAGE],
           currentRing: 1,
-          sessionId: null,
+          conversationId: null,
+          ringPhase: 'core',
+          error: null,
         });
+      },
+
+      deleteConversation: async (id: string) => {
+        try {
+          await chatApi.deleteConversation(id);
+          set((state) => ({
+            conversations: state.conversations.filter((c) => c.id !== id),
+            conversationId: state.conversationId === id ? null : state.conversationId,
+          }));
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Failed to delete conversation';
+          set({ error: message });
+        }
       },
     }),
     {
       name: 'quento-chat-storage',
       storage: createJSONStorage(() => AsyncStorage),
+      partialize: (state) => ({
+        conversationId: state.conversationId,
+        currentRing: state.currentRing,
+        ringPhase: state.ringPhase,
+      }),
     }
   )
 );

@@ -7,189 +7,206 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  strategyApi,
+  Strategy as ApiStrategy,
+  Recommendation as ApiRecommendation,
+  ActionItem as ApiActionItem,
+  Priority,
+  Effort,
+  ActionStatus,
+} from '../services/api';
 
 interface Recommendation {
   id: string;
   title: string;
-  priority: 'high' | 'medium' | 'low';
+  priority: Priority;
   summary: string;
   impact: string;
+  currentState?: string;
+  targetState?: string;
 }
 
 interface ActionItem {
   id: string;
   title: string;
-  description: string;
-  priority: 'high' | 'medium' | 'low';
-  effort: 'low' | 'medium' | 'high';
-  category: string;
-  status: 'pending' | 'in_progress' | 'completed';
+  description?: string;
+  priority: Priority;
+  effort: Effort;
+  category?: string;
+  status: ActionStatus;
+  expectedImpact?: string;
+  dueDate?: string;
+  completedAt?: string;
 }
 
 interface Strategy {
   id: string;
-  executiveSummary: string;
-  visionStatement: string;
+  title?: string;
+  status: string;
+  executiveSummary?: string;
+  visionStatement?: string;
   keyStrengths: string[];
   criticalGaps: string[];
   recommendations: Recommendation[];
   actionItems: ActionItem[];
   ninetyDayPriorities: string[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface StrategyState {
+  strategyId: string | null;
   strategy: Strategy | null;
+  strategies: ApiStrategy[];
   isGenerating: boolean;
   error: string | null;
 
   // Actions
-  generateStrategy: () => void;
-  updateActionStatus: (actionId: string, status: string) => void;
+  generateStrategy: (analysisId: string, sessionId?: string) => Promise<void>;
+  loadStrategy: (id: string) => Promise<void>;
+  listStrategies: () => Promise<void>;
+  updateActionStatus: (actionId: string, status: ActionStatus, notes?: string) => Promise<void>;
   clearStrategy: () => void;
+}
+
+// Convert API strategy to store format
+function mapApiStrategy(api: ApiStrategy): Strategy {
+  return {
+    id: api.id,
+    title: api.title,
+    status: api.status,
+    executiveSummary: api.executive_summary,
+    visionStatement: api.vision_statement,
+    keyStrengths: api.key_strengths,
+    criticalGaps: api.critical_gaps,
+    recommendations: api.recommendations.map((r) => ({
+      id: r.id,
+      title: r.title,
+      priority: r.priority,
+      summary: r.summary,
+      impact: r.impact,
+      currentState: r.current_state,
+      targetState: r.target_state,
+    })),
+    actionItems: api.action_items.map((a) => ({
+      id: a.id,
+      title: a.title,
+      description: a.description,
+      priority: a.priority,
+      effort: a.effort,
+      category: a.category,
+      status: a.status,
+      expectedImpact: a.expected_impact,
+      dueDate: a.due_date,
+      completedAt: a.completed_at,
+    })),
+    ninetyDayPriorities: api.ninety_day_priorities,
+    createdAt: api.created_at,
+    updatedAt: api.updated_at,
+  };
 }
 
 export const useStrategyStore = create<StrategyState>()(
   persist(
     (set, get) => ({
+      strategyId: null,
       strategy: null,
+      strategies: [],
       isGenerating: false,
       error: null,
 
-      generateStrategy: () => {
+      generateStrategy: async (analysisId: string, sessionId?: string) => {
         set({ isGenerating: true, error: null });
 
-        // Simulate strategy generation
-        setTimeout(() => {
-          const mockStrategy: Strategy = {
-            id: 'str_' + Date.now(),
-            executiveSummary:
-              'Your business has a strong foundation with authentic brand values. By focusing on digital presence optimization and strategic content marketing, you can significantly expand your reach and customer base.',
-            visionStatement:
-              "To become the most trusted and beloved brand in your market, known for quality, authenticity, and exceptional customer experience.",
-            keyStrengths: [
-              'Authentic brand story with local focus',
-              'Quality product with loyal customer base',
-              'Good foundation for online ordering',
-              'Strong word-of-mouth reputation',
-            ],
-            criticalGaps: [
-              'Limited social media presence',
-              'SEO optimization needed',
-              'No email marketing strategy',
-              'Inconsistent online reviews management',
-            ],
-            recommendations: [
-              {
-                id: 'rec_1',
-                title: 'Social Media Presence',
-                priority: 'high',
-                summary:
-                  'Build an engaging Instagram presence showcasing your process and products',
-                impact: 'Increase brand awareness and customer engagement',
-              },
-              {
-                id: 'rec_2',
-                title: 'Local SEO Optimization',
-                priority: 'high',
-                summary:
-                  'Optimize Google Business profile and local search presence',
-                impact: 'Improve visibility for local customers searching online',
-              },
-              {
-                id: 'rec_3',
-                title: 'Email Marketing',
-                priority: 'medium',
-                summary: 'Set up email capture and regular newsletter',
-                impact: 'Build direct customer relationships and drive repeat business',
-              },
-            ],
-            actionItems: [
-              {
-                id: 'act_1',
-                title: 'Create Instagram content calendar',
-                description:
-                  'Plan 4 weeks of Instagram content focusing on behind-the-scenes and product highlights',
-                priority: 'high',
-                effort: 'medium',
-                category: 'social_media',
-                status: 'pending',
-              },
-              {
-                id: 'act_2',
-                title: 'Optimize Google Business profile',
-                description:
-                  'Add photos, update hours, respond to reviews, and add posts regularly',
-                priority: 'high',
-                effort: 'low',
-                category: 'seo',
-                status: 'pending',
-              },
-              {
-                id: 'act_3',
-                title: 'Add email signup to website',
-                description:
-                  'Implement email capture form with incentive offer for new subscribers',
-                priority: 'medium',
-                effort: 'low',
-                category: 'marketing',
-                status: 'pending',
-              },
-              {
-                id: 'act_4',
-                title: 'Write meta descriptions for all pages',
-                description:
-                  'Create compelling meta descriptions for homepage and key pages',
-                priority: 'high',
-                effort: 'low',
-                category: 'seo',
-                status: 'pending',
-              },
-              {
-                id: 'act_5',
-                title: 'Set up review response workflow',
-                description:
-                  'Create templates and schedule for responding to all reviews within 24 hours',
-                priority: 'medium',
-                effort: 'low',
-                category: 'marketing',
-                status: 'pending',
-              },
-            ],
-            ninetyDayPriorities: [
-              'Launch consistent Instagram presence with 3-4 posts per week',
-              'Optimize Google Business profile and achieve 10+ new reviews',
-              'Set up basic email capture and send first newsletter',
-              'Complete all high-priority SEO quick wins',
-            ],
-          };
+        try {
+          const response = await strategyApi.generateStrategy(analysisId, sessionId);
 
+          if (response.success && response.data) {
+            set({
+              strategyId: response.data.id,
+              strategy: mapApiStrategy(response.data),
+              isGenerating: false,
+            });
+          } else {
+            throw new Error('Failed to generate strategy');
+          }
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Strategy generation failed';
           set({
-            strategy: mockStrategy,
             isGenerating: false,
+            error: message,
           });
-        }, 2000);
+        }
       },
 
-      updateActionStatus: (actionId: string, status: string) => {
+      loadStrategy: async (id: string) => {
+        try {
+          const response = await strategyApi.getStrategy(id);
+
+          if (response.success && response.data) {
+            set({
+              strategyId: response.data.id,
+              strategy: mapApiStrategy(response.data),
+              error: null,
+            });
+          }
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Failed to load strategy';
+          set({ error: message });
+        }
+      },
+
+      listStrategies: async () => {
+        try {
+          const response = await strategyApi.listStrategies();
+
+          if (response.success) {
+            set({ strategies: response.data, error: null });
+          }
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Failed to list strategies';
+          set({ error: message });
+        }
+      },
+
+      updateActionStatus: async (actionId: string, status: ActionStatus, notes?: string) => {
         const { strategy } = get();
         if (!strategy) return;
 
-        const updatedActionItems = strategy.actionItems.map((item) =>
-          item.id === actionId
-            ? { ...item, status: status as ActionItem['status'] }
-            : item
-        );
+        try {
+          const response = await strategyApi.updateActionItem(actionId, status, notes);
 
-        set({
-          strategy: {
-            ...strategy,
-            actionItems: updatedActionItems,
-          },
-        });
+          if (response.success && response.data) {
+            const updatedAction = response.data;
+
+            // Update local state
+            const updatedActionItems = strategy.actionItems.map((item) =>
+              item.id === actionId
+                ? {
+                    ...item,
+                    status: updatedAction.status,
+                    completedAt: updatedAction.completed_at,
+                  }
+                : item
+            );
+
+            set({
+              strategy: {
+                ...strategy,
+                actionItems: updatedActionItems,
+              },
+            });
+          }
+        } catch (error) {
+          const message = error instanceof Error ? error.message : 'Failed to update action';
+          set({ error: message });
+        }
       },
 
       clearStrategy: () => {
         set({
+          strategyId: null,
           strategy: null,
           isGenerating: false,
           error: null,
@@ -199,6 +216,10 @@ export const useStrategyStore = create<StrategyState>()(
     {
       name: 'quento-strategy-storage',
       storage: createJSONStorage(() => AsyncStorage),
+      partialize: (state) => ({
+        strategyId: state.strategyId,
+        strategy: state.strategy,
+      }),
     }
   )
 );
