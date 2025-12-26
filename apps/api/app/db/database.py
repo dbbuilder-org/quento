@@ -10,9 +10,9 @@ from typing import AsyncGenerator
 
 from app.config import settings
 
-# Create async engine
+# Create async engine (use async_database_url to ensure asyncpg driver)
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    settings.async_database_url,
     echo=settings.DEBUG,
     future=True,
     pool_pre_ping=True,

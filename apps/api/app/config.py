@@ -23,8 +23,17 @@ class Settings(BaseSettings):
     PORT: int = 8000
     ALLOWED_ORIGINS: List[str] = ["http://localhost:3000", "http://localhost:8081"]
 
-    # Database
+    # Database (raw URL from environment)
     DATABASE_URL: str = "postgresql+asyncpg://quento:quento@localhost:5432/quento"
+
+    @property
+    def async_database_url(self) -> str:
+        """Get database URL with asyncpg driver for SQLAlchemy async."""
+        url = self.DATABASE_URL
+        # Convert postgresql:// to postgresql+asyncpg://
+        if url.startswith("postgresql://"):
+            url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+        return url
 
     # Redis
     REDIS_URL: str = "redis://localhost:6379"
