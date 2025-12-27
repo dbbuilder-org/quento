@@ -24,7 +24,7 @@ export default {
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.quento.app",
-      buildNumber: "1"
+      buildNumber: "2"
     },
     android: {
       adaptiveIcon: {
