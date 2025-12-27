@@ -39,6 +39,9 @@ export default {
     },
     plugins: [
       "expo-router",
+      "expo-secure-store",
+      "expo-web-browser",
+      "@react-native-community/datetimepicker",
       // Temporarily disabled - Sentry SDK has C++ issues with Xcode 16/iOS 26
       // [
       //   "sentry-expo",
