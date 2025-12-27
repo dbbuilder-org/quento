@@ -16,6 +16,9 @@ import {
 import { COLORS, SPACING, RADIUS, TYPOGRAPHY, ANIMATION } from '../../constants/theme';
 import { RingPhase } from '../../services/api';
 
+/** Maximum font scale to prevent button overflow */
+const MAX_FONT_SIZE_MULTIPLIER = 1.3;
+
 interface QuickReply {
   id: string;
   text: string;
@@ -160,8 +163,18 @@ function QuickReplyButton({ reply, onSelect, index }: QuickReplyButtonProps) {
         ]}
         onPress={handlePress}
       >
-        {reply.icon && <Text style={styles.replyIcon}>{reply.icon}</Text>}
-        <Text style={styles.replyText}>{reply.text}</Text>
+        {reply.icon && (
+          <Text style={styles.replyIcon} maxFontSizeMultiplier={MAX_FONT_SIZE_MULTIPLIER}>
+            {reply.icon}
+          </Text>
+        )}
+        <Text
+          style={styles.replyText}
+          allowFontScaling={true}
+          maxFontSizeMultiplier={MAX_FONT_SIZE_MULTIPLIER}
+        >
+          {reply.text}
+        </Text>
       </Pressable>
     </Animated.View>
   );

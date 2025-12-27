@@ -10,12 +10,15 @@ import { useState } from 'react';
 import {
   StyleSheet,
   View,
-  Text,
+  Text as RNText,
   TextInput,
   TextInputProps,
   ViewStyle,
 } from 'react-native';
 import { COLORS, SPACING, TYPOGRAPHY, RADIUS } from '../../constants/theme';
+
+/** Maximum font scale to prevent input overflow */
+const MAX_FONT_SIZE_MULTIPLIER = 1.3;
 
 export interface InputProps extends Omit<TextInputProps, 'style'> {
   /** Input label */
@@ -51,7 +54,15 @@ export default function Input({
 
   return (
     <View style={[styles.container, containerStyle]}>
-      {label && <Text style={styles.label}>{label}</Text>}
+      {label && (
+        <RNText
+          style={styles.label}
+          allowFontScaling={true}
+          maxFontSizeMultiplier={MAX_FONT_SIZE_MULTIPLIER}
+        >
+          {label}
+        </RNText>
+      )}
 
       <View style={inputContainerStyles}>
         {prefix && <View style={styles.prefix}>{prefix}</View>}
@@ -63,6 +74,8 @@ export default function Input({
             suffix && styles.inputWithSuffix,
           ]}
           placeholderTextColor={COLORS.bark}
+          allowFontScaling={true}
+          maxFontSizeMultiplier={MAX_FONT_SIZE_MULTIPLIER}
           onFocus={(e) => {
             setIsFocused(true);
             textInputProps.onFocus?.(e);
@@ -78,9 +91,13 @@ export default function Input({
       </View>
 
       {(helperText || error) && (
-        <Text style={[styles.helperText, error && styles.errorText]}>
+        <RNText
+          style={[styles.helperText, error && styles.errorText]}
+          allowFontScaling={true}
+          maxFontSizeMultiplier={MAX_FONT_SIZE_MULTIPLIER}
+        >
           {error || helperText}
-        </Text>
+        </RNText>
       )}
     </View>
   );
@@ -117,7 +134,8 @@ const styles = StyleSheet.create({
 
   input: {
     flex: 1,
-    height: 52,
+    minHeight: 52,
+    paddingVertical: SPACING.md,
     paddingHorizontal: SPACING.lg,
     ...TYPOGRAPHY.body,
     color: COLORS.carbon,

@@ -7,6 +7,9 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { COLORS, SPACING, TYPOGRAPHY } from '../../constants/theme';
 
+/** Maximum font scale to prevent bubble overflow */
+const MAX_FONT_SIZE_MULTIPLIER = 1.3;
+
 interface ChatBubbleProps {
   content: string;
   role: 'user' | 'assistant' | 'system';
@@ -19,9 +22,19 @@ export default function ChatBubble({ content, role, timestamp }: ChatBubbleProps
   return (
     <View style={[styles.container, isUser && styles.containerUser]}>
       <View style={[styles.bubble, isUser ? styles.bubbleUser : styles.bubbleAssistant]}>
-        <Text style={[styles.content, isUser && styles.contentUser]}>{content}</Text>
+        <Text
+          style={[styles.content, isUser && styles.contentUser]}
+          allowFontScaling={true}
+          maxFontSizeMultiplier={MAX_FONT_SIZE_MULTIPLIER}
+        >
+          {content}
+        </Text>
       </View>
-      <Text style={[styles.timestamp, isUser && styles.timestampUser]}>
+      <Text
+        style={[styles.timestamp, isUser && styles.timestampUser]}
+        allowFontScaling={true}
+        maxFontSizeMultiplier={MAX_FONT_SIZE_MULTIPLIER}
+      >
         {timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
       </Text>
     </View>

@@ -11,8 +11,11 @@
  * AI App Development powered by ServiceVision (https://www.servicevision.net)
  */
 
-import { StyleSheet, Text, Pressable, ActivityIndicator, ViewStyle, TextStyle } from 'react-native';
+import { StyleSheet, Text as RNText, Pressable, ActivityIndicator, ViewStyle, TextStyle } from 'react-native';
 import { COLORS, SPACING, TYPOGRAPHY, RADIUS, ANIMATION } from '../../constants/theme';
+
+/** Maximum font scale to prevent button overflow */
+const MAX_FONT_SIZE_MULTIPLIER = 1.3;
 
 export interface ButtonProps {
   /** Button text content */
@@ -78,7 +81,13 @@ export default function Button({
       ) : (
         <>
           {icon}
-          <Text style={textStyles}>{children}</Text>
+          <RNText
+            style={textStyles}
+            allowFontScaling={true}
+            maxFontSizeMultiplier={MAX_FONT_SIZE_MULTIPLIER}
+          >
+            {children}
+          </RNText>
         </>
       )}
     </Pressable>
@@ -107,13 +116,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
 
-  // Sizes
+  // Sizes - use minHeight + padding for font scaling support
   default: {
-    height: 52,
+    minHeight: 52,
+    paddingVertical: SPACING.md,
     paddingHorizontal: SPACING['2xl'],
   },
   small: {
-    height: 44,
+    minHeight: 44,
+    paddingVertical: SPACING.sm,
     paddingHorizontal: SPACING.lg,
   },
 
