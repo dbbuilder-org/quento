@@ -14,7 +14,10 @@
     "test:coverage": "jest --coverage",
     "storybook:generate": "sb-rn-get-stories",
     "storybook": "STORYBOOK_ENABLED=true expo start",
-    "storybook:ios": "STORYBOOK_ENABLED=true expo run:ios"
+    "storybook:ios": "STORYBOOK_ENABLED=true expo run:ios",
+    "appstore:prepare": "./scripts/prepare-appstore.sh",
+    "appstore:text": "./scripts/prepare-appstore.sh --text-only",
+    "appstore:push": "./scripts/prepare-appstore.sh --push"
   },
   "dependencies": {
     "@clerk/clerk-expo": "^2.19.14",

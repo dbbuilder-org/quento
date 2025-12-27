@@ -1,0 +1,49 @@
+{
+  "configVersion": 0,
+  "apple": {
+    "info": {
+      "en-US": {
+        "title": "Quento",
+        "subtitle": "Grow Your Business Smartly",
+        "description": "Unlock your business potential with Quento – the AI-Powered Business Growth Platform designed to elevate your brand's story and optimize your digital marketing strategies. \n\nAre you a small to medium-sized business owner seeking clarity and direction in your growth journey? With Quento, you can transform your aspirations into actionable strategies without the need for extensive resources.\n\nKey Features:\n\n- **Offline Support**: Stay productive anytime, anywhere. Quento operates seamlessly without an internet connection, allowing you to access crucial tools and insights even when you’re offline.\n\n- **Social Login**: Sign in effortlessly using your Google, Apple, or Facebook account. Get started in seconds and dive straight into refining your business strategy.\n\n- **AI-Driven Insights**: Our unique Rings of Growth framework guides you through five essential phases: Core (Discover your story), Discover (Analyze your landscape), Plan (Strategize for success), Execute (Implement with confidence), and Optimize (Ensure continuous improvement). \n\n- **Personalized Recommendations**: Quento analyzes your existing web presence and provides tailored strategies to enhance your marketing efforts and optimize your online visibility.\n\n- **Actionable Checklists**: Say goodbye to overwhelming to-do lists! Our app provides prioritized implementation checklists, making it easy to focus on what matters most to your growth.\n\n- **Performance Tracking**: Keep your growth on track with integrated performance tracking and get recommendations for ongoing improvement tailored specifically to your business.\n\nEmotional Benefits:\n\n- **Confidence in Your Brand**: Quento empowers you to articulate your brand story clearly and effectively, giving you the confidence to connect with your audience.\n\n- **Clarity in Decision-Making**: With data-driven insights and strategic planning, you’ll have the clarity needed to make informed decisions that drive growth.\n\n- **Peace of Mind**: Free yourself from the complexities of marketing strategy. Quento simplifies the process, allowing you to focus on what you do best – running your business.\n\nJoin the Quento community today and embrace a smarter approach to business growth. Download now and embark on your journey to success with confidence and clarity. Your story deserves to be told – let Quento help you share it with the world!",
+        "keywords": [
+          "business",
+          "marketing",
+          "AI",
+          "optimization",
+          "analytics",
+          "strategy",
+          "offline",
+          "social",
+          "login",
+          "insights",
+          "branding",
+          "web"
+        ],
+        "promotionalText": "Unlock your business's potential with Quento—your all-in-one AI growth platform that works offline; start optimizing today and watch your success story unfold!",
+        "releaseNotes": "Release Notes for Quento Version 1.0.0\n\nWelcome to Quento! We are excited to announce the launch of our first version, designed to empower businesses on their growth journey. Here’s what you can expect:\n\n**New Features:**\n\n- **Offline Support**: \n  - Access essential features and tools without an internet connection. Perfect for on-the-go users who need to manage their business anytime, anywhere.\n\n- **Social Login Options**: \n  - Sign in effortlessly using your Google, Apple, or Facebook accounts. No more remembering passwords—just quick and secure access to your Quento experience.\n\n**User Experience Enhancements:**\n\n- **Intuitive Navigation**: \n  - Navigate through the app with ease thanks to our user-friendly design. Finding the information and tools you need is now more straightforward than ever.\n\n- **AI-Powered Insights**: \n  - Engage in conversations with our AI to understand your business better. Get personalized recommendations that help you articulate your brand story and optimize your online presence.\n\n**Growth Journey Support:**\n\n- **Rings of Growth Framework**: \n  - Explore our unique framework guiding you through the phases of business development—from understanding your landscape to continuous optimization. Each ring supports your growth with tailored strategies.\n\n- **Strategic Roadmap Creation**: \n  - Benefit from AI-generated recommendations that help you develop a clear and actionable marketing strategy, ensuring you stay on track with your business goals.\n\n**Performance Tracking**: \n- Monitor your progress and receive iterative improvement suggestions to help you stay ahead in your business growth journey.\n\nWe appreciate your support and feedback as we continue to enhance Quento. Enjoy exploring the app, and let’s grow together! \n\nFor assistance or to share your thoughts, please reach out to our support team. Thank you for choosing Quento!"
+      }
+    },
+    "categories": {
+      "primary": "SOCIAL_NETWORKING"
+    },
+    "icon": "./eas-metadata/en-US/icon.png",
+    "screenshots": {
+      "en-US": []
+    },
+    "advisory": {
+      "alcoholTobaccoOrDrugUseOrReferences": "NONE",
+      "contests": "NONE",
+      "gamblingSimulated": "NONE",
+      "horrorOrFearThemes": "NONE",
+      "matureOrSuggestiveThemes": "NONE",
+      "medicalOrTreatmentInformation": "NONE",
+      "profanityOrCrudeHumor": "NONE",
+      "sexualContentGraphicAndNudity": "NONE",
+      "sexualContentOrNudity": "NONE",
+      "violenceCartoonOrFantasy": "NONE",
+      "violenceRealistic": "NONE",
+      "violenceRealisticProlongedGraphicOrSadistic": "NONE"
+    }
+  }
+}
