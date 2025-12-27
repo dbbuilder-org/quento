@@ -33,9 +33,6 @@
     "production": {
       "extends": "base",
       "distribution": "store",
-      "env": {
-        "NODE_ENV": "production"
-      },
       "ios": {
         "resourceClass": "m-medium"
       },
