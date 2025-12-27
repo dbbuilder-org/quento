@@ -46,6 +46,7 @@
       "ios": {
         "appleId": "chris@servicevision.net",
         "appleTeamId": "J745X8LR59",
+        "ascAppId": "6757098148",
         "ascApiKeyId": "J864TYBDLD",
         "ascApiKeyIssuerId": "98ea10a3-6742-45cb-82f3-748d4a7b5e51",
         "ascApiKeyPath": "/Users/admin/.config/apple/AuthKey_J864TYBDLD.p8"
