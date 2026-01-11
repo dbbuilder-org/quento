@@ -5,6 +5,7 @@ AI App Development powered by ServiceVision (https://www.servicevision.net)
 """
 
 import asyncio
+import os
 from typing import AsyncGenerator, Generator
 from uuid import uuid4
 
@@ -13,6 +14,14 @@ import pytest_asyncio
 from httpx import AsyncClient, ASGITransport
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.pool import StaticPool
+
+# Set test environment variables BEFORE importing app modules
+os.environ.setdefault("JWT_SECRET_KEY", "test-secret-key-for-pytest")
+os.environ.setdefault("DATABASE_URL", "sqlite+aiosqlite:///:memory:")
+
+# Clear settings cache to ensure test env vars are used
+from app.config import get_settings
+get_settings.cache_clear()
 
 from app.main import app
 from app.db.database import get_db, Base
