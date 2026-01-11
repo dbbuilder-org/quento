@@ -21,6 +21,12 @@ class TestCreateAnalysis:
             "/api/v1/analysis", json=valid_analysis_data
         )
 
+        # Debug: print response details if not successful
+        if response.status_code != 201:
+            print(f"Response status: {response.status_code}")
+            print(f"Response body: {response.text}")
+            print(f"Request headers: {authenticated_client.headers}")
+
         assert response.status_code == 201
         data = response.json()
         assert "data" in data
