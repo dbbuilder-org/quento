@@ -97,7 +97,7 @@ async def test_user(test_session: AsyncSession) -> User:
 @pytest_asyncio.fixture(scope="function")
 async def auth_headers(test_user: User) -> dict:
     """Create authentication headers for test user."""
-    token = create_access_token(data={"sub": str(test_user.id)})
+    token = create_access_token(subject=test_user.id)
     return {"Authorization": f"Bearer {token}"}
 
 
