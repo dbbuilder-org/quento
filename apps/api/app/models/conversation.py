@@ -44,6 +44,7 @@ class Conversation(Base):
     ring_phase = Column(Enum(RingPhase), default=RingPhase.CORE)
     status = Column(Enum(ConversationStatus), default=ConversationStatus.ACTIVE)
     summary = Column(Text, nullable=True)
+    business_context = Column(Text, nullable=True)  # Stores initial context from website analysis
     extra_data = Column(JSON, default=dict)
 
     created_at = Column(DateTime, default=datetime.utcnow)

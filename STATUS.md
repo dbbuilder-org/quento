@@ -1,6 +1,6 @@
 # Quento - Current Status
 
-**Last Updated:** December 27, 2025
+**Last Updated:** January 11, 2026
 
 ## Release Status
 
@@ -60,6 +60,14 @@
 - [x] Strategy service
 - [x] Pytest test suite
 
+### AI Context Engineering (NEW)
+- [x] Sophisticated system prompts for each Ring phase (Core, Discover, Plan, Execute, Optimize)
+- [x] Brand voice consistency across all AI responses
+- [x] Pre-processing: Intent detection, sentiment analysis, enrichment notes
+- [x] Post-processing: Response cleaning, action item extraction, quality flags
+- [x] Phase-optimized RAG context (different data per ring phase)
+- [x] AI-driven ring phase advancement (replaces simple message count)
+
 ## Features In Progress
 
 - [ ] Screenshots for App Store listing
@@ -103,6 +111,17 @@ poetry run uvicorn app.main:app --reload
 - Configured in `apps/mobile/eas.json`
 
 ## Recent Changes
+
+### January 11, 2026
+- Complete AI context engineering overhaul:
+  - Rewrote system prompts with business coaching methodology (5 Whys, prioritization matrix)
+  - Added Quento brand voice for consistent AI personality
+  - Implemented pre-processing (intent detection, sentiment analysis, enrichment)
+  - Implemented post-processing (response cleaning, action extraction, quality checks)
+  - Phase-optimized RAG context injection (different context per ring phase)
+  - AI-driven ring phase advancement with confidence scoring
+- Added `business_context` field to Conversation model
+- Updated chat schemas for new session_update fields
 
 ### December 27, 2025
 - Fixed EAS build (removed ios/ from git, deleted conflicting app.json)

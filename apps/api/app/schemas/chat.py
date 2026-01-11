@@ -35,7 +35,7 @@ class MessageResponse(BaseModel):
 class ConversationCreate(BaseModel):
     """Create conversation request."""
 
-    initial_context: Optional[dict[str, Any]] = None
+    initial_context: Optional[str] = None  # Business context from website analysis
 
 
 class ConversationResponse(BaseModel):
@@ -60,7 +60,7 @@ class ConversationDetailResponse(BaseModel):
     title: Optional[str]
     ring_phase: RingPhase
     status: ConversationStatus
-    business_context: Optional[dict[str, Any]] = None
+    business_context: Optional[str] = None  # Context from website analysis
     messages: list[MessageResponse]
     created_at: datetime
     updated_at: datetime

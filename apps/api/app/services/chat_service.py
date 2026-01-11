@@ -24,7 +24,7 @@ from app.schemas.chat import (
     SendMessageResponse,
 )
 from app.core.exceptions import NotFoundError, ValidationError
-from app.services.ai_service import AIService
+from app.services.ai_service import AIService, analyze_for_phase_advancement
 
 
 class ChatService:
@@ -169,7 +169,11 @@ class ChatService:
     ) -> SendMessageResponse:
         """
         Send a user message and get AI response.
-        Uses AIService for intelligent, context-aware responses.
+        Uses AIService for intelligent, context-aware responses with:
+        - Pre-processing for intent/sentiment detection
+        - Phase-optimized RAG context
+        - Post-processing for quality assurance
+        - AI-driven ring phase advancement
         """
         # Add user message
         user_message = await self.add_message(
@@ -183,7 +187,7 @@ class ChatService:
         # Get conversation for context
         conversation = await self.get_conversation(conversation_id, user_id)
 
-        # Generate AI response using AIService
+        # Generate AI response using enhanced AIService
         ai_service = AIService(self.db)
         ai_response_content = await ai_service.generate_response(
             conversation=conversation,
@@ -199,8 +203,15 @@ class ChatService:
             role=MessageRole.ASSISTANT,
         )
 
-        # Determine if we should advance to next ring
-        should_advance = self._should_advance_ring(conversation, message_data.content)
+        # Analyze for AI-driven ring phase advancement
+        advancement_analysis = await analyze_for_phase_advancement(
+            conversation=conversation,
+            latest_exchange=(message_data.content, ai_response_content),
+            analysis_context=None,  # Will be fetched from DB if needed
+        )
+
+        should_advance = advancement_analysis.get("should_advance", False)
+        advancement_confidence = advancement_analysis.get("confidence", 0)
 
         return SendMessageResponse(
             user_message=MessageResponse.model_validate(user_message),
@@ -208,6 +219,8 @@ class ChatService:
             session_update={
                 "ring_phase": conversation.ring_phase.value,
                 "should_advance": should_advance,
+                "advancement_confidence": advancement_confidence,
+                "advancement_reason": advancement_analysis.get("reason", ""),
             },
         )
 
