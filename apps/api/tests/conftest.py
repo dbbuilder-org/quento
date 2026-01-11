@@ -112,11 +112,22 @@ async def auth_headers(test_user: User) -> dict:
 
 @pytest_asyncio.fixture(scope="function")
 async def authenticated_client(
-    client: AsyncClient, auth_headers: dict
+    test_session: AsyncSession, auth_headers: dict
 ) -> AsyncGenerator[AsyncClient, None]:
-    """Create authenticated test client."""
-    client.headers.update(auth_headers)
-    yield client
+    """Create authenticated test client (separate from unauthenticated client)."""
+
+    async def override_get_db():
+        yield test_session
+
+    app.dependency_overrides[get_db] = override_get_db
+
+    transport = ASGITransport(app=app)
+    async with AsyncClient(
+        transport=transport, base_url="http://test", headers=auth_headers
+    ) as ac:
+        yield ac
+
+    app.dependency_overrides.clear()
 
 
 # Test data fixtures

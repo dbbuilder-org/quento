@@ -16,7 +16,7 @@
     "start": "nx serve",
     "build": "nx build",
     "test": "nx test",
-    "lint": "nx lint",
+    "lint": "nx run-many -t lint --all",
     "mobile:start": "cd apps/mobile && npx expo start",
     "mobile:ios": "cd apps/mobile && npx expo run:ios",
     "mobile:android": "cd apps/mobile && npx expo run:android",
