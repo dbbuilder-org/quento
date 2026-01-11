@@ -7,11 +7,10 @@ AI App Development powered by ServiceVision (https://www.servicevision.net)
 from datetime import datetime
 from typing import Optional
 from sqlalchemy import Column, String, Integer, Boolean, DateTime, JSON
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 import uuid
 
-from app.db.database import Base
+from app.db.database import Base, GUID
 
 
 class User(Base):
@@ -19,7 +18,7 @@ class User(Base):
 
     __tablename__ = "users"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id = Column(GUID(), primary_key=True, default=uuid.uuid4)
     clerk_id = Column(String(255), unique=True, nullable=True, index=True)  # Clerk user ID
     email = Column(String(255), unique=True, nullable=False, index=True)
     hashed_password = Column(String(255), nullable=True)  # Nullable for Clerk users

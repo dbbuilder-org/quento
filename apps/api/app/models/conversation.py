@@ -6,12 +6,11 @@ AI App Development powered by ServiceVision (https://www.servicevision.net)
 
 from datetime import datetime
 from sqlalchemy import Column, String, Integer, Text, DateTime, ForeignKey, JSON, Enum
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 import uuid
 import enum
 
-from app.db.database import Base
+from app.db.database import Base, GUID
 
 
 class RingPhase(str, enum.Enum):
@@ -38,8 +37,8 @@ class Conversation(Base):
 
     __tablename__ = "conversations"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    id = Column(GUID(), primary_key=True, default=uuid.uuid4)
+    user_id = Column(GUID(), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
     title = Column(String(255), nullable=True)
     ring_phase = Column(Enum(RingPhase), default=RingPhase.CORE)
     status = Column(Enum(ConversationStatus), default=ConversationStatus.ACTIVE)
@@ -63,8 +62,8 @@ class Message(Base):
 
     __tablename__ = "messages"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    conversation_id = Column(UUID(as_uuid=True), ForeignKey("conversations.id", ondelete="CASCADE"), nullable=False)
+    id = Column(GUID(), primary_key=True, default=uuid.uuid4)
+    conversation_id = Column(GUID(), ForeignKey("conversations.id", ondelete="CASCADE"), nullable=False)
     role = Column(Enum(MessageRole), nullable=False)
     content = Column(Text, nullable=False)
     tokens_used = Column(Integer, nullable=True)

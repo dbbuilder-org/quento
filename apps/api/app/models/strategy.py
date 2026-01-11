@@ -6,12 +6,11 @@ AI App Development powered by ServiceVision (https://www.servicevision.net)
 
 from datetime import datetime
 from sqlalchemy import Column, String, Text, Date, DateTime, ForeignKey, JSON, Enum
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 import uuid
 import enum
 
-from app.db.database import Base
+from app.db.database import Base, GUID
 
 
 class StrategyStatus(str, enum.Enum):
@@ -44,9 +43,9 @@ class Strategy(Base):
 
     __tablename__ = "strategies"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    analysis_id = Column(UUID(as_uuid=True), ForeignKey("analyses.id"), nullable=True)
+    id = Column(GUID(), primary_key=True, default=uuid.uuid4)
+    user_id = Column(GUID(), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    analysis_id = Column(GUID(), ForeignKey("analyses.id"), nullable=True)
     title = Column(String(255), nullable=True)
     summary = Column(Text, nullable=True)
     recommendations = Column(JSON, nullable=True)
@@ -69,8 +68,8 @@ class ActionItem(Base):
 
     __tablename__ = "action_items"
 
-    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    strategy_id = Column(UUID(as_uuid=True), ForeignKey("strategies.id", ondelete="CASCADE"), nullable=False)
+    id = Column(GUID(), primary_key=True, default=uuid.uuid4)
+    strategy_id = Column(GUID(), ForeignKey("strategies.id", ondelete="CASCADE"), nullable=False)
     title = Column(String(255), nullable=False)
     description = Column(Text, nullable=True)
     priority = Column(Enum(Priority), default=Priority.MEDIUM)
