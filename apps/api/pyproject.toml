@@ -65,7 +65,7 @@ check_untyped_defs = false
 no_implicit_optional = false
 
 [[tool.mypy.overrides]]
-module = ["app.models.*", "app.db.*", "app.services.*"]
+module = ["app.*"]
 ignore_errors = true
 
 [tool.ruff]
