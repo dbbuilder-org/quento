@@ -37,9 +37,14 @@ class ChatService:
         self, user_id: UUID, data: Optional[ConversationCreate] = None
     ) -> Conversation:
         """Create a new conversation."""
+        # Use provided title or default
+        title = "New Conversation"
+        if data and data.title:
+            title = data.title
+
         conversation = Conversation(
             user_id=user_id,
-            title="New Conversation",
+            title=title,
             ring_phase=RingPhase.CORE,
             status=ConversationStatus.ACTIVE,
             business_context=data.initial_context if data else None,
@@ -100,6 +105,7 @@ class ChatService:
         """List user's conversations."""
         result = await self.db.execute(
             select(Conversation)
+            .options(selectinload(Conversation.messages))
             .where(Conversation.user_id == user_id)
             .order_by(Conversation.updated_at.desc())
             .limit(limit)

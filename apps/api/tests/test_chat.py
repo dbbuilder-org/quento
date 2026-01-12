@@ -250,10 +250,9 @@ class TestRingPhase:
         )
         conversation_id = create_response.json()["data"]["id"]
 
-        # Update ring phase
+        # Update ring phase (correct endpoint uses /ring suffix with query param)
         response = await authenticated_client.patch(
-            f"/api/v1/chat/conversations/{conversation_id}",
-            json={"ring_phase": "discover"},
+            f"/api/v1/chat/conversations/{conversation_id}/ring?ring_phase=discover",
         )
 
         assert response.status_code == 200

@@ -35,6 +35,7 @@ class MessageResponse(BaseModel):
 class ConversationCreate(BaseModel):
     """Create conversation request."""
 
+    title: Optional[str] = None  # Conversation title
     initial_context: Optional[str] = None  # Business context from website analysis
 
 
