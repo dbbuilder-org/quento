@@ -26,7 +26,7 @@ class MessageResponse(BaseModel):
     role: MessageRole
     content: str
     created_at: datetime
-    metadata: Optional[dict[str, Any]] = None
+    extra_data: Optional[dict[str, Any]] = None
 
     class Config:
         from_attributes = True

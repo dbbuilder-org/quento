@@ -200,6 +200,41 @@ async def send_message(
         )
 
 
+@router.get(
+    "/conversations/{conversation_id}/messages",
+    response_model=PaginatedResponse[MessageResponse],
+    summary="Get messages",
+    description="Get messages from a conversation.",
+)
+async def get_messages(
+    conversation_id: UUID,
+    limit: int = Query(default=50, ge=1, le=100),
+    offset: int = Query(default=0, ge=0),
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Get messages from a conversation."""
+    service = ChatService(db)
+    try:
+        conversation = await service.get_conversation(conversation_id, current_user.id)
+        messages = sorted(conversation.messages, key=lambda m: m.created_at)
+        paginated = messages[offset:offset + limit]
+        return PaginatedResponse(
+            data=[MessageResponse.model_validate(m) for m in paginated],
+            pagination=Pagination(
+                total=len(messages),
+                limit=limit,
+                offset=offset,
+                has_more=offset + limit < len(messages),
+            ),
+        )
+    except NotFoundError as e:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=str(e),
+        )
+
+
 @router.patch(
     "/conversations/{conversation_id}/ring",
     response_model=APIResponse[ConversationResponse],
