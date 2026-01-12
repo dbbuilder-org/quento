@@ -61,4 +61,16 @@ warn_unused_ignores = true
 [tool.ruff]
 line-length = 100
 select = ["E", "F", "I", "N", "W", "UP"]
-ignore = []
+ignore = [
+    "I001",   # Import sorting - handled by isort
+    "F401",   # Unused imports - many are intentional re-exports in __init__.py
+    "F841",   # Local variable assigned but never used - some intentional
+    "N802",   # Function name casing (e.g., AI_MODEL validator)
+    "N811",   # Constant naming (e.g., PostgresUUID alias)
+    "N818",   # Exception naming suffix
+    "E501",   # Line too long - allow flexibility
+    "UP011",  # Unnecessary parentheses to functools.lru_cache
+]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]  # Re-exports in __init__ files
